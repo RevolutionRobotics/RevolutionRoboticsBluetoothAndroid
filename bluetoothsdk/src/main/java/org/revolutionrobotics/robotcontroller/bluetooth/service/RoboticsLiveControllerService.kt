@@ -2,6 +2,7 @@ package org.revolutionrobotics.robotcontroller.bluetooth.service
 
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
+import androidx.annotation.IntRange
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -72,15 +73,15 @@ class RoboticsLiveControllerService : RoboticsBLEService() {
         schedulerJob = null
     }
 
-    fun updateXDirection(@android.support.annotation.IntRange(from = 0, to = 255) x: Int) {
+    fun updateXDirection(@IntRange(from = 0, to = 255) x: Int) {
         this.x = x.toByte()
     }
 
-    fun updateYDirection(@android.support.annotation.IntRange(from = 0, to = 255) y: Int) {
+    fun updateYDirection(@IntRange(from = 0, to = 255) y: Int) {
         this.y = y.toByte()
     }
 
-    fun onButtonPressed(@android.support.annotation.IntRange(from = 0, to = 8) buttonIndex: Int) {
+    fun onButtonPressed(@IntRange(from = 0, to = 8) buttonIndex: Int) {
         buttonByte = buttonByte or getMaskBasedOnIndex(buttonIndex)
     }
 

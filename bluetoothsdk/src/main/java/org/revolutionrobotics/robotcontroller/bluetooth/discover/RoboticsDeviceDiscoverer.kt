@@ -8,7 +8,7 @@ import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.content.Context
 import android.os.ParcelUuid
-import android.support.annotation.RequiresPermission
+import androidx.annotation.RequiresPermission
 import org.revolutionrobotics.robotcontroller.bluetooth.domain.Device
 import org.revolutionrobotics.robotcontroller.bluetooth.exception.BLEScanFailedException
 import org.revolutionrobotics.robotcontroller.bluetooth.extensions.getBLEManager
