@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                                                   xmlns:app="http://schemas.android.com/apk/res-auto"
+                                                   xmlns:tools="http://schemas.android.com/tools"
+                                                   tools:ignore="HardcodedText"
+                                                   android:layout_width="match_parent"
+                                                   android:layout_height="match_parent">
+
+    <Button
+            android:id="@+id/btn_connect"
+            android:layout_width="148dp" android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginStart="84dp"
+            android:layout_marginTop="8dp"
+            android:text="Connect"/>
+
+    <Button
+            android:id="@+id/btn_disconnect"
+            android:layout_width="148dp" android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginEnd="84dp"
+            android:layout_marginTop="8dp"
+            android:text="Disconnect"/>
+
+    <Button
+            android:id="@+id/btn_start_live_service"
+            android:layout_width="148dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btn_connect"
+            android:layout_marginStart="116dp"
+            android:layout_marginTop="8dp"
+            android:text="Start live service"/>
+
+    <Button
+            android:id="@+id/btn_stop_live_service"
+            android:layout_width="148dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="116dp"
+            android:layout_marginTop="16dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btn_disconnect"
+            android:text="Stop live service"/>
+
+    <TextView
+            android:id="@+id/txt_backward"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btn_stop_live_service"
+            android:layout_marginStart="32dp"
+            android:text="Backward"
+            android:layout_marginTop="8dp"/>
+
+    <TextView
+            android:id="@+id/txt_forward"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btn_stop_live_service"
+            android:layout_marginEnd="32dp"
+            android:text="Forward"
+            android:layout_marginTop="8dp"/>
+
+    <SeekBar
+            android:id="@+id/seekbar_forward"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/txt_backward"
+            android:layout_marginTop="4dp"
+            android:max="255"
+            android:progress="127"
+            app:layout_constraintStart_toStartOf="@id/txt_backward"
+            app:layout_constraintEnd_toEndOf="@id/txt_forward"/>
+
+    <TextView
+            android:id="@+id/txt_left"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/seekbar_forward"
+            android:layout_marginStart="32dp"
+            android:text="Left"
+            android:layout_marginTop="8dp"/>
+
+    <TextView
+            android:id="@+id/txt_right"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/seekbar_forward"
+            android:layout_marginEnd="32dp"
+            android:text="Right"
+            android:layout_marginTop="8dp"/>
+
+    <SeekBar
+            android:id="@+id/seekbar_right"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/txt_left"
+            android:layout_marginTop="4dp"
+            android:max="255"
+            android:progress="127"
+            app:layout_constraintStart_toStartOf="@id/txt_left"
+            app:layout_constraintEnd_toEndOf="@id/txt_right"/>
+
+    <Button
+            android:id="@+id/btn_1"
+            android:layout_width="64dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/seekbar_right"
+            app:layout_constraintEnd_toStartOf="@id/btn_2"
+            android:layout_marginTop="8dp"
+            app:layout_constraintHorizontal_chainStyle="spread"
+            android:text="BTN1"
+            android:layout_marginStart="56dp"/>
+
+    <Button
+            android:id="@+id/btn_2"
+            android:layout_width="64dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toEndOf="@id/btn_1"
+            app:layout_constraintTop_toBottomOf="@id/seekbar_right"
+            app:layout_constraintHorizontal_chainStyle="spread"
+            android:text="BTN2"
+            android:layout_marginTop="8dp"
+            app:layout_constraintEnd_toStartOf="@id/btn_3"/>
+
+    <Button
+            android:id="@+id/btn_3"
+            android:layout_width="64dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toEndOf="@id/btn_2"
+            app:layout_constraintTop_toBottomOf="@id/seekbar_right"
+            app:layout_constraintHorizontal_chainStyle="spread"
+            android:text="BTN3"
+            android:layout_marginTop="8dp"
+            app:layout_constraintEnd_toStartOf="@id/btn_4"/>
+
+    <Button
+            android:id="@+id/btn_4"
+            android:layout_width="64dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toEndOf="@id/btn_3"
+            app:layout_constraintTop_toBottomOf="@id/seekbar_right"
+            app:layout_constraintHorizontal_chainStyle="spread"
+            android:text="BTN4"
+            android:layout_marginTop="8dp"
+            app:layout_constraintEnd_toStartOf="@id/btn_5"/>
+
+    <Button
+            android:id="@+id/btn_5"
+            android:layout_width="64dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toEndOf="@id/btn_4"
+            app:layout_constraintTop_toBottomOf="@id/seekbar_right"
+            app:layout_constraintHorizontal_chainStyle="spread"
+            android:text="BTN5"
+            android:layout_marginTop="8dp"
+            app:layout_constraintEnd_toStartOf="@id/btn_6"/>
+
+    <Button
+            android:id="@+id/btn_6"
+            android:layout_width="64dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toEndOf="@id/btn_5"
+            app:layout_constraintTop_toBottomOf="@id/seekbar_right"
+            android:layout_marginEnd="56dp"
+            android:text="BTN6"
+            android:layout_marginTop="8dp"
+            app:layout_constraintHorizontal_chainStyle="spread"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+
+    <Button
+            android:id="@+id/btn_read_battery"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:textSize="12sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btn_1"
+            app:layout_constraintEnd_toStartOf="@id/btn_read_system_info"
+            app:layout_constraintHorizontal_chainStyle="spread"
+            android:text="Read battery"
+            android:layout_marginStart="16dp"/>
+
+    <Button
+            android:id="@+id/btn_read_system_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toEndOf="@id/btn_read_battery"
+            app:layout_constraintTop_toBottomOf="@id/btn_1"
+            app:layout_constraintHorizontal_chainStyle="spread"
+            android:textSize="12sp"
+            android:text="Read system info"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintEnd_toStartOf="@id/btn_send_test_file"/>
+
+    <Button
+            android:id="@+id/btn_send_test_file"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toEndOf="@id/btn_read_system_info"
+            app:layout_constraintTop_toBottomOf="@id/btn_1"
+            app:layout_constraintHorizontal_chainStyle="spread"
+            android:textSize="12sp"
+            android:text="Send test file"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintEnd_toStartOf="@id/btn_read_motor_value"/>
+
+    <Button
+            android:id="@+id/btn_read_motor_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toEndOf="@id/btn_send_test_file"
+            app:layout_constraintTop_toBottomOf="@id/btn_1"
+            android:textSize="12sp"
+            android:layout_marginEnd="16dp"
+            android:text="Read motor value"
+            app:layout_constraintHorizontal_chainStyle="spread"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
