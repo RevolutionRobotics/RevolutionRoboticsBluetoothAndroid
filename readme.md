@@ -112,7 +112,7 @@ RoboticsConfigurationService
 You can send the new firmware and framework version in a compressed tar.gz file
 ##### `Test kit`
 You can send test python files to the robot.
-###### Example
+###### Example python code
 ```python
 if robot._ring_led:
     robot._ring_led.set_scenario(RingLed.ColorWheel)
@@ -276,3 +276,6 @@ RoboticsLiveControllerService
 - fun updateYDirection(y: Int) // 0-255
 - fun changeButtonState(index: Int, pressed: Bool) // Index must be within range 1-8
 ```
+
+### `Example project`
+For a more detailed description, please check the example project
