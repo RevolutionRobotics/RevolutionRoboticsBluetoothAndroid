@@ -279,3 +279,11 @@ RoboticsLiveControllerService
 
 ### `Example project`
 For a more detailed description, please check the example project
+
+## Author
+
+László Nagy laszlo.nagy@supercharge.io
+
+## License
+
+RevolutionRoboticsBlockly is available under the MIT license. See the LICENSE file for more info.
