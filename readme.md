@@ -286,4 +286,4 @@ László Nagy laszlo.nagy@supercharge.io
 
 ## License
 
-RevolutionRoboticsBlockly is available under the MIT license. See the LICENSE file for more info.
+RevolutionRoboticsBluetooth is available under the MIT license. See the LICENSE file for more info.
