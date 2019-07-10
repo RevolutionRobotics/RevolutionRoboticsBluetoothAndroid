@@ -266,9 +266,9 @@ Sensor
 ```
 
 ### `RoboticsLiveControllerService`
-Robot live controlling 
+Robot live controlling. You need to send a valid configuration to the robot before you start it
 ```kotlin
-RoboticsLiveControllerService
+RoboticsLiveControllerService.
 - fun start()
 - fun stop()
 
