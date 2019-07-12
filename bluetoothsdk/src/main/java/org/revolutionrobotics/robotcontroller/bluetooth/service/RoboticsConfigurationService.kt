@@ -5,6 +5,9 @@ import android.bluetooth.BluetoothGattCharacteristic
 import android.net.Uri
 import android.util.Base64
 import android.util.Log
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.revolutionrobotics.robotcontroller.bluetooth.exception.BLEConnectionException
 import org.revolutionrobotics.robotcontroller.bluetooth.exception.BLEException
 import org.revolutionrobotics.robotcontroller.bluetooth.exception.BLELongMessageIsAlreadyRunning
@@ -14,6 +17,7 @@ import org.revolutionrobotics.robotcontroller.bluetooth.exception.BLESendingTime
 import org.revolutionrobotics.robotcontroller.bluetooth.file.FileChunkHandler
 import org.revolutionrobotics.robotcontroller.bluetooth.file.MD5Checker
 import java.util.UUID
+import java.util.concurrent.TimeUnit
 
 // TODO Remove logs
 @Suppress("TooManyFunctions")
@@ -75,6 +79,16 @@ class RoboticsConfigurationService : RoboticsBLEService() {
 
     fun sendConfiguration(file: Uri, onSuccess: () -> Unit, onError: (exception: BLEException) -> Unit) {
         initLongMessage(file, onSuccess, onError, FUNCTION_TYPE_CONFIGURATION)
+    }
+
+    fun stop() {
+        if (currentFile != null) {
+            GlobalScope.launch {
+                delay(TimeUnit.SECONDS.toMillis(1))
+                sendFinalizeMessage()
+            }
+            resetVariables()
+        }
     }
 
     private fun initLongMessage(
@@ -176,7 +190,7 @@ class RoboticsConfigurationService : RoboticsBLEService() {
 
     @Suppress("ReturnCount")
     private fun validateCharacteristicEvent(characteristic: BluetoothGattCharacteristic, status: Int): Boolean {
-        if (characteristic.uuid != CHARACTERISTIC) {
+        if (characteristic.uuid != CHARACTERISTIC || currentFile == null) {
             return false
         }
         if (status != BluetoothGatt.GATT_SUCCESS) {

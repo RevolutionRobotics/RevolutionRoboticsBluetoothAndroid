@@ -4,12 +4,22 @@ import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import org.revolutionrobotics.robotcontroller.bluetooth.exception.BLEConnectionException
 import org.revolutionrobotics.robotcontroller.bluetooth.exception.BLEException
+import java.nio.ByteBuffer
 import java.util.UUID
 
 class RoboticsMotorService : RoboticsBLEService() {
 
     companion object {
         const val SERVICE_ID = "d2d5558c-5b9d-11e9-8647-d663bd873d93"
+
+        fun getMotorInfoFromBytes(bytes: ByteArray): MotorInfo {
+            val buffer = ByteBuffer.wrap(bytes)
+            return MotorInfo(
+                speed = buffer.float,
+                position = buffer.int,
+                power = buffer.long
+            )
+        }
     }
 
     override val serviceId: UUID = UUID.fromString(SERVICE_ID)
