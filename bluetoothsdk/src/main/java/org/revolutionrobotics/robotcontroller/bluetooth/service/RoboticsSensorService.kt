@@ -5,20 +5,27 @@ import android.bluetooth.BluetoothGattCharacteristic
 import org.revolutionrobotics.robotcontroller.bluetooth.exception.BLEConnectionException
 import org.revolutionrobotics.robotcontroller.bluetooth.exception.BLEException
 import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import java.util.UUID
 
 class RoboticsSensorService : RoboticsBLEService() {
 
     companion object {
         const val SERVICE_ID = "d2d5558c-5b9d-11e9-8647-d663bd873d93"
+        const val ULTRASOUND_MESSAGE_SIZE = 5
 
-        fun getBumberInfo(bytes: ByteArray): BumperInfo = BumperInfo(
-            pressed = bytes[1] == 1.toByte()
+        fun getBumberInfo(bytes: ByteArray): BumperInfo? = if (bytes.isEmpty()) null else BumperInfo(
+            pressed = bytes[1] == 2.toByte()
         )
 
-        fun getUltrasoundInfo(bytes: ByteArray): UltrasoundInfo {
-            val buffer = ByteBuffer.wrap(bytes)
-            return UltrasoundInfo(distance = buffer.getLong(1))
+        fun getUltrasoundInfo(bytes: ByteArray): UltrasoundInfo? {
+            return if (bytes.size >= ULTRASOUND_MESSAGE_SIZE) {
+                val buffer = ByteBuffer.wrap(bytes)
+                buffer.order(ByteOrder.LITTLE_ENDIAN)
+                UltrasoundInfo(distance = buffer.int)
+            } else {
+                null
+            }
         }
     }
 

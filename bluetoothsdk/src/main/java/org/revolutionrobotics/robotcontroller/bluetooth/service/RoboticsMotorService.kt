@@ -11,14 +11,20 @@ class RoboticsMotorService : RoboticsBLEService() {
 
     companion object {
         const val SERVICE_ID = "d2d5558c-5b9d-11e9-8647-d663bd873d93"
+        const val MOTOR_MESSAGE_SIZE = 9
 
-        fun getMotorInfoFromBytes(bytes: ByteArray): MotorInfo {
+        @ExperimentalUnsignedTypes
+        fun getMotorInfoFromBytes(bytes: ByteArray): MotorInfo? {
             val buffer = ByteBuffer.wrap(bytes)
-            return MotorInfo(
-                speed = buffer.float,
-                position = buffer.int,
-                power = buffer.long
-            )
+            return if (bytes.size >= MOTOR_MESSAGE_SIZE) {
+                MotorInfo(
+                    speed = buffer.float,
+                    position = buffer.int,
+                    power = buffer.get().toUByte().toInt()
+                )
+            } else {
+                null
+            }
         }
     }
 
