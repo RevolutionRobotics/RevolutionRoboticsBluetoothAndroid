@@ -10,9 +10,9 @@ import androidx.core.net.toUri
 import com.revolution.robotics.core.utils.dynamicPermissions.DynamicPermissionHandler
 import com.revolution.robotics.core.utils.dynamicPermissions.DynamicPermissionListener
 import kotlinx.android.synthetic.main.acrtivity_example.*
-import org.revolutionrobotics.robotcontroller.bluetooth.communication.RoboticsDeviceConnector
-import org.revolutionrobotics.robotcontroller.bluetooth.discover.RoboticsDeviceDiscoverer
-import org.revolutionrobotics.robotcontroller.bluetooth.service.RoboticsMotorService
+import org.revolutionrobotics.bluetooth.android.communication.RoboticsDeviceConnector
+import org.revolutionrobotics.bluetooth.android.discover.RoboticsDeviceDiscoverer
+import org.revolutionrobotics.bluetooth.android.service.RoboticsMotorService
 import java.io.File
 import java.nio.charset.Charset
 
