@@ -1,1 +1,1 @@
-include ':app', ':bluetoothsdk'
+include ':app', ':bluetooth-android'
