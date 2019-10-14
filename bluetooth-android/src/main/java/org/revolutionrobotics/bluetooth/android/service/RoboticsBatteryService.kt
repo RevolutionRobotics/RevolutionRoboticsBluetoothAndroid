@@ -1,9 +1,9 @@
-package org.revolutionrobotics.robotcontroller.bluetooth.service
+package org.revolutionrobotics.bluetooth.android.service
 
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
-import org.revolutionrobotics.robotcontroller.bluetooth.exception.BLEConnectionException
-import org.revolutionrobotics.robotcontroller.bluetooth.exception.BLEException
+import org.revolutionrobotics.bluetooth.android.exception.BLEConnectionException
+import org.revolutionrobotics.bluetooth.android.exception.BLEException
 import java.util.UUID
 
 class RoboticsBatteryService : RoboticsBLEService() {
