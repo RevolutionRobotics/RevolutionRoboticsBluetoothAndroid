@@ -51,6 +51,7 @@ class ExampleActivity : Activity(), DynamicPermissionListener {
         btn_connect.setOnClickListener {
             deviceDiscoverer.discoverRobots(this) { devices ->
                 if (devices.isNotEmpty()) {
+                    deviceDiscoverer.stopDiscovering()
                     Toast.makeText(this, "Connecting", Toast.LENGTH_LONG).show()
                     deviceConnector.connect(this, devices.first(), onConnected = {
                         isConnected = true
