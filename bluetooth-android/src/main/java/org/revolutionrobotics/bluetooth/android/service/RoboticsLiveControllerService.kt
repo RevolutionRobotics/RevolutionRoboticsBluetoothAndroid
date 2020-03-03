@@ -2,12 +2,15 @@ package org.revolutionrobotics.bluetooth.android.service
 
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
+import android.util.Log
 import androidx.annotation.IntRange
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.UUID
+import kotlin.experimental.and
+import kotlin.experimental.inv
 import kotlin.experimental.or
 
 @Suppress("TooManyFunctions")
@@ -68,6 +71,7 @@ class RoboticsLiveControllerService : RoboticsBLEService() {
     }
 
     fun stop() {
+        buttonByte = 0.toByte()
         isRunning = false
         schedulerJob?.cancel()
         schedulerJob = null
@@ -85,6 +89,10 @@ class RoboticsLiveControllerService : RoboticsBLEService() {
         buttonByte = buttonByte or getMaskBasedOnIndex(buttonIndex)
     }
 
+    fun onButtonReleased(@IntRange(from = 0, to = 8) buttonIndex: Int) {
+        buttonByte = buttonByte and getMaskBasedOnIndex(buttonIndex).inv()
+    }
+
     private fun getMaskBasedOnIndex(buttonIndex: Int) = (2 pow buttonIndex).toByte()
 
     private fun generateMessage(counter: Int) = ByteArray(MESSAGE_LENGTH).apply {
@@ -92,7 +100,6 @@ class RoboticsLiveControllerService : RoboticsBLEService() {
         this[POSITION_X_COORD] = x
         this[POSITION_Y_COORD] = y
         this[POSITION_BUTTON] = buttonByte
-        buttonByte = 0
     }
 
     @Suppress("UnusedPrivateMember")

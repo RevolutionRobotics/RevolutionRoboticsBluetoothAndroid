@@ -114,12 +114,22 @@ class ExampleActivity : Activity(), DynamicPermissionListener {
     }
 
     private fun setupControllerButtons() {
-        btn_1.setOnClickListener { if (isConnected) deviceConnector.liveControllerService.onButtonPressed(0) }
-        btn_2.setOnClickListener { if (isConnected) deviceConnector.liveControllerService.onButtonPressed(1) }
-        btn_3.setOnClickListener { if (isConnected) deviceConnector.liveControllerService.onButtonPressed(2) }
-        btn_4.setOnClickListener { if (isConnected) deviceConnector.liveControllerService.onButtonPressed(3) }
-        btn_5.setOnClickListener { if (isConnected) deviceConnector.liveControllerService.onButtonPressed(4) }
-        btn_6.setOnClickListener { if (isConnected) deviceConnector.liveControllerService.onButtonPressed(5) }
+        btn_1.setOnTouchListener(ButtonPressListener { onButtonChanged(0, it)})
+        btn_2.setOnTouchListener(ButtonPressListener { onButtonChanged(1, it)})
+        btn_3.setOnTouchListener(ButtonPressListener { onButtonChanged(2, it)})
+        btn_4.setOnTouchListener(ButtonPressListener { onButtonChanged(3, it)})
+        btn_5.setOnTouchListener(ButtonPressListener { onButtonChanged(4, it)})
+        btn_6.setOnTouchListener(ButtonPressListener { onButtonChanged(5, it)})
+    }
+
+    private fun onButtonChanged(buttonIndex: Int, pressed: Boolean) {
+        if (isConnected) {
+            if (pressed){
+                deviceConnector.liveControllerService.onButtonPressed(buttonIndex)
+            } else {
+                deviceConnector.liveControllerService.onButtonReleased(buttonIndex)
+            }
+        }
     }
 
     private fun setupBottomButtons() {
