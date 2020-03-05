@@ -4,22 +4,28 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.net.Uri
 import android.os.Bundle
+import android.view.View
 import android.widget.SeekBar
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import com.revolution.robotics.core.utils.dynamicPermissions.DynamicPermissionHandler
 import com.revolution.robotics.core.utils.dynamicPermissions.DynamicPermissionListener
 import kotlinx.android.synthetic.main.acrtivity_example.*
+import org.revolutionrobotics.bluetooth.android.communication.RoboticsConnectionStatusListener
 import org.revolutionrobotics.bluetooth.android.communication.RoboticsDeviceConnector
 import org.revolutionrobotics.bluetooth.android.discover.RoboticsDeviceDiscoverer
+import org.revolutionrobotics.bluetooth.android.domain.Device
 import org.revolutionrobotics.bluetooth.android.service.RoboticsMotorService
+import org.revolutionrobotics.robotcontroller.bluetooth.connect.ConnectDialog
 import java.io.File
 import java.nio.charset.Charset
 
-class ExampleActivity : Activity(), DynamicPermissionListener {
+class ExampleActivity : AppCompatActivity(), DynamicPermissionListener,
+    RoboticsConnectionStatusListener {
 
-    private val deviceDiscoverer = RoboticsDeviceDiscoverer()
-    private val deviceConnector = RoboticsDeviceConnector()
+    val deviceConnector = RoboticsDeviceConnector()
+
     private val permissionRequest = DynamicPermissionHandler.PermissionRequest(
         DynamicPermissionHandler(),
         mutableListOf(android.Manifest.permission.ACCESS_FINE_LOCATION)
@@ -33,6 +39,12 @@ class ExampleActivity : Activity(), DynamicPermissionListener {
         permissionRequest.listener(this)
         permissionRequest.request(this)
         isConnected = false
+        deviceConnector.registerConnectionListener(this)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        deviceConnector.unregisterConnectionListener(this)
     }
 
     override fun onAllPermissionsGranted() {
@@ -49,25 +61,9 @@ class ExampleActivity : Activity(), DynamicPermissionListener {
     @SuppressLint("MissingPermission")
     private fun setupConnectionButtons() {
         btn_connect.setOnClickListener {
-            deviceDiscoverer.discoverRobots(this) { devices ->
-                if (devices.isNotEmpty()) {
-                    deviceDiscoverer.stopDiscovering()
-                    Toast.makeText(this, "Connecting", Toast.LENGTH_LONG).show()
-                    deviceConnector.connect(this, devices.first(), onConnected = {
-                        isConnected = true
-                        Toast.makeText(this, "Connected", Toast.LENGTH_LONG).show()
-                    }, onDisconnected = {
-                        isConnected = false
-                        Toast.makeText(this, "Disconnected", Toast.LENGTH_LONG).show()
-                    }, onError = {
-                        isConnected = false
-                        Toast.makeText(this, "Connection error: ${it.message}", Toast.LENGTH_LONG).show()
-                    })
-                }
-            }
+            ConnectDialog().show(supportFragmentManager, "connect")
         }
         btn_disconnect.setOnClickListener {
-            deviceDiscoverer.stopDiscovering()
             deviceConnector.disconnect()
         }
 
@@ -186,7 +182,6 @@ class ExampleActivity : Activity(), DynamicPermissionListener {
     override fun onStop() {
         super.onStop()
         isConnected = false
-        deviceDiscoverer.stopDiscovering()
         deviceConnector.disconnect()
     }
 
@@ -203,4 +198,18 @@ class ExampleActivity : Activity(), DynamicPermissionListener {
         }
         writeText(assets.open("led_test.py").readBytes().toString(Charset.forName("UTF-8")))
     }.toUri()
+
+    override fun onConnectionStateChanged(connected: Boolean, serviceDiscovered: Boolean) {
+
+        isConnected = connected && serviceDiscovered
+        if (isConnected) {
+            connection_status_text.text = "Connected"
+            btn_connect.visibility = View.GONE
+            btn_disconnect.visibility = View.VISIBLE
+        } else {
+            connection_status_text.text = "Not connected"
+            btn_connect.visibility = View.VISIBLE
+            btn_disconnect.visibility = View.GONE
+        }
+    }
 }
