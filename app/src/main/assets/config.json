@@ -1,123 +1,115 @@
 {
-  "robotConfig":{
-    "motors":[
+  "robotConfig": {
+    "motors": [
       {
-        "name":"drive1",
-        "type":2,
-        "reversed":0,
-        "side":0
+        "name": "drive1",
+        "type": 2,
+        "reversed": 0,
+        "side": 0
       },
       {
-
       },
       {
-
       },
       {
-        "name":"drive4",
-        "type":2,
-        "reversed":0,
-        "side":1
+        "name": "drive4",
+        "type": 2,
+        "reversed": 0,
+        "side": 1
       },
       {
-
       },
       {
-
       }
     ],
-    "sensors":[
+    "sensors": [
       {
-
       },
       {
-
       },
       {
-
       },
       {
-
       }
     ]
   },
-  "blocklyList":[
+  "blocklyList": [
     {
-      "pythonCode":"cm9ib3QubGVkLnNldChsZWRfaW5kZXg9WzEsMiwzLDQsNSw2LDcsOCw5LDEwLDExLDEyXSwgY29sb3I9JyMzMzAwMzMnKQo=",
-      "assignments":{
-        "buttons":[
+      "pythonCode": "cm9ib3QubGVkLnNldChsZWRzPVsxLDIsMyw0LDUsNiw3LDgsOSwxMCwxMSwxMl0sIGNvbG9yPScjMzMwMDMzJyk=",
+      "assignments": {
+        "buttons": [
           {
-            "id":0,
-            "priority":6
+            "id": 0,
+            "priority": 6
           }
         ]
       }
     },
     {
-      "pythonCode":"cm9ib3QubGVkLnNldChsZWRfaW5kZXg9WzEsMiwzLDQsNSw2LDcsOCw5LDEwLDExLDEyXSwgY29sb3I9JyNmZjY2MDAnKQo=",
-      "assignments":{
-        "buttons":[
+      "pythonCode": "cm9ib3QubGVkLnNldChsZWRzPVsxLDIsMyw0LDUsNiw3LDgsOSwxMCwxMSwxMl0sIGNvbG9yPScjZmY2NjAwJyk=",
+      "assignments": {
+        "buttons": [
           {
-            "id":1,
-            "priority":5
+            "id": 1,
+            "priority": 5
           }
         ]
       }
     },
     {
-      "pythonCode":"cm9ib3QubGVkLnNldChsZWRfaW5kZXg9WzEsMiwzLDQsNSw2LDcsOCw5LDEwLDExLDEyXSwgY29sb3I9JyNjYzMzY2MnKQo=",
-      "assignments":{
-        "buttons":[
+      "pythonCode": "cm9ib3QubGVkLnNldChsZWRzPVsxLDIsMyw0LDUsNiw3LDgsOSwxMCwxMSwxMl0sIGNvbG9yPScjY2MzM2NjJyk=",
+      "assignments": {
+        "buttons": [
           {
-            "id":2,
-            "priority":4
+            "id": 2,
+            "priority": 4
           }
         ]
       }
     },
     {
-      "pythonCode":"cm9ib3QubGVkLnNldChsZWRfaW5kZXg9WzEsMiwzLDQsNSw2LDcsOCw5LDEwLDExLDEyXSwgY29sb3I9JyM2NmZmOTknKQo=",
-      "assignments":{
-        "buttons":[
+      "pythonCode": "cm9ib3QubGVkLnNldChsZWRzPVsxLDIsMyw0LDUsNiw3LDgsOSwxMCwxMSwxMl0sIGNvbG9yPScjNjZmZjk5Jyk=",
+      "assignments": {
+        "buttons": [
           {
-            "id":3,
-            "priority":1
+            "id": 3,
+            "priority": 1
           }
         ]
       }
     },
     {
-      "pythonCode":"cm9ib3QubGVkLnNldChsZWRfaW5kZXg9WzEsMiwzLDQsNSw2LDcsOCw5LDEwLDExLDEyXSwgY29sb3I9JyNjYzAwMDAnKQo=",
-      "assignments":{
-        "buttons":[
+      "pythonCode": "cm9ib3QubGVkLnNldChsZWRzPVsxLDIsMyw0LDUsNiw3LDgsOSwxMCwxMSwxMl0sIGNvbG9yPScjY2MwMDAwJyk=",
+      "assignments": {
+        "buttons": [
           {
-            "id":4,
-            "priority":2
+            "id": 4,
+            "priority": 2
           }
         ]
       }
     },
     {
-      "pythonCode":"cm9ib3QubGVkLnNldChsZWRfaW5kZXg9WzEsMiwzLDQsNSw2LDcsOCw5LDEwLDExLDEyXSwgY29sb3I9JyMwMDAwOTknKQo=",
-      "assignments":{
-        "buttons":[
+      "pythonCode": "cm9ib3QubGVkLnNldChsZWRzPVsxLDIsMyw0LDUsNiw3LDgsOSwxMCwxMSwxMl0sIGNvbG9yPScjMDAwMDk5Jyk=",
+      "assignments": {
+        "buttons": [
           {
-            "id":5,
-            "priority":3
+            "id": 5,
+            "priority": 3
           }
         ]
       }
     },
     {
-      "builtinScriptName":"drive_2sticks",
-      "assignments":{
-        "analog":[
+      "builtinScriptName": "drive_2sticks",
+      "assignments": {
+        "analog": [
           {
-            "channels":[
+            "channels": [
               0,
               1
             ],
-            "priority":7
+            "priority": 7
           }
         ]
       }
