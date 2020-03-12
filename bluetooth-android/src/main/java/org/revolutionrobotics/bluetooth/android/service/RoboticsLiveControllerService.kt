@@ -8,13 +8,16 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.revolutionrobotics.bluetooth.android.communication.NRoboticsDeviceConnector
 import java.util.UUID
 import kotlin.experimental.and
 import kotlin.experimental.inv
 import kotlin.experimental.or
 
 @Suppress("TooManyFunctions")
-class RoboticsLiveControllerService : RoboticsBLEService() {
+class RoboticsLiveControllerService(
+    deviceConnector: NRoboticsDeviceConnector
+) : RoboticsBLEService(deviceConnector) {
 
     companion object {
         const val SERVICE_ID = "d2d5558c-5b9d-11e9-8647-d663bd873d93"
@@ -110,12 +113,4 @@ class RoboticsLiveControllerService : RoboticsBLEService() {
         }
         return res
     }
-
-    override fun onCharacteristicRead(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic, status: Int) =
-        Unit
-
-    override fun onCharacteristicWrite(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic, status: Int) =
-        Unit
-
-    override fun onCharacteristicChanged(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic) = Unit
 }

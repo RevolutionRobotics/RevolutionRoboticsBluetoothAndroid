@@ -56,7 +56,6 @@ class ConnectDialog : DialogFragment() {
             getExampleActivity().deviceConnector.connect(activity!!, device, onConnected = {
                 Toast.makeText(activity, "Connected", Toast.LENGTH_SHORT).show()
                 dismiss()
-            }, onDisconnected = {
             }, onError = {
                 Toast.makeText(activity, "Error", Toast.LENGTH_SHORT).show()
             })

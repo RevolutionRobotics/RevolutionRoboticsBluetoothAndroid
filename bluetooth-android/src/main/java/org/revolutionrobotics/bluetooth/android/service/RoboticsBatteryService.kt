@@ -2,11 +2,14 @@ package org.revolutionrobotics.bluetooth.android.service
 
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
+import org.revolutionrobotics.bluetooth.android.communication.NRoboticsDeviceConnector
 import org.revolutionrobotics.bluetooth.android.exception.BLEConnectionException
 import org.revolutionrobotics.bluetooth.android.exception.BLEException
 import java.util.UUID
 
-class RoboticsBatteryService : RoboticsBLEService() {
+class RoboticsBatteryService(
+    deviceConnector: NRoboticsDeviceConnector
+) : RoboticsBLEService(deviceConnector) {
 
     companion object {
         const val SERVICE_ID = "0000180f-0000-1000-8000-00805f9b34fb"
@@ -24,7 +27,7 @@ class RoboticsBatteryService : RoboticsBLEService() {
         super.disconnect()
     }
 
-    override fun onCharacteristicRead(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic, status: Int) {
+    fun onCharacteristicRead(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic, status: Int) {
         if (status == BluetoothGatt.GATT_SUCCESS) {
             successCallbackMap[characteristic.uuid]?.let { callback ->
                 callback.invoke(characteristic.value[0].toInt())
@@ -65,9 +68,4 @@ class RoboticsBatteryService : RoboticsBLEService() {
             }
         }
     }
-
-    override fun onCharacteristicWrite(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic, status: Int) =
-        Unit
-
-    override fun onCharacteristicChanged(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic) = Unit
 }

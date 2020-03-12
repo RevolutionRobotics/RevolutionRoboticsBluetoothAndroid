@@ -1,11 +1,18 @@
 package org.revolutionrobotics.bluetooth.android.service
 
+import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattService
+import android.util.Log
+import no.nordicsemi.android.ble.callback.DataReceivedCallback
+import no.nordicsemi.android.ble.data.Data
+import org.revolutionrobotics.bluetooth.android.communication.NRoboticsDeviceConnector
 import java.util.UUID
 
-abstract class RoboticsBLEService {
+abstract class RoboticsBLEService(
+    protected val deviceConnector: NRoboticsDeviceConnector
+) {
 
     abstract val serviceId: UUID
 
@@ -26,7 +33,20 @@ abstract class RoboticsBLEService {
         service = null
     }
 
-    abstract fun onCharacteristicRead(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic, status: Int)
-    abstract fun onCharacteristicWrite(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic, status: Int)
-    abstract fun onCharacteristicChanged(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic)
+    protected fun readMessage(characteristic: BluetoothGattCharacteristic?, callback: (Data) -> Unit) {
+        deviceConnector.readCharacteristic(characteristic)
+            .with { device, data -> callback.invoke(data) }
+            .enqueue()
+    }
+    protected fun writeMessage(characteristic: BluetoothGattCharacteristic?, byteArray: ByteArray, done: () -> Unit) {
+        characteristic?.let {
+            deviceConnector.writeCharacteristic(
+                characteristic,
+                byteArray
+            )
+                .done { done.invoke() }
+                .enqueue()
+        }
+
+    }
 }

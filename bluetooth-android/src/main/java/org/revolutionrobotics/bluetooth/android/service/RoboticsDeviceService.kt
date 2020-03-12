@@ -2,12 +2,15 @@ package org.revolutionrobotics.bluetooth.android.service
 
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
+import org.revolutionrobotics.bluetooth.android.communication.NRoboticsDeviceConnector
 import org.revolutionrobotics.bluetooth.android.exception.BLEConnectionException
 import org.revolutionrobotics.bluetooth.android.exception.BLEException
 import java.util.UUID
 
 @Suppress("TooManyFunctions")
-class RoboticsDeviceService : RoboticsBLEService() {
+class RoboticsDeviceService(
+    deviceConnector: NRoboticsDeviceConnector
+) : RoboticsBLEService(deviceConnector) {
 
     companion object {
         const val SERVICE_ID = "0000180a-0000-1000-8000-00805f9b34fb"
@@ -31,7 +34,7 @@ class RoboticsDeviceService : RoboticsBLEService() {
         super.disconnect()
     }
 
-    override fun onCharacteristicRead(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic, status: Int) {
+    fun onCharacteristicRead(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic, status: Int) {
         if (status == BluetoothGatt.GATT_SUCCESS) {
             successCallbackMap[characteristic.uuid]?.let { callback ->
                 callback.invoke(characteristic.getStringValue(0))
@@ -74,14 +77,6 @@ class RoboticsDeviceService : RoboticsBLEService() {
     fun getModelNumber(onCompleted: (String) -> Unit, onError: (exception: BLEException) -> Unit) {
         readCharacteristic(MODEL_NUMBER_CHARACTERISTIC, onCompleted, onError)
     }
-
-    override fun onCharacteristicWrite(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic, status: Int) =
-        Unit
-
-    override fun onCharacteristicChanged(
-        gatt: BluetoothGatt?,
-        characteristic: BluetoothGattCharacteristic
-    ) = Unit
 
     private fun readCharacteristic(
         uuid: UUID,

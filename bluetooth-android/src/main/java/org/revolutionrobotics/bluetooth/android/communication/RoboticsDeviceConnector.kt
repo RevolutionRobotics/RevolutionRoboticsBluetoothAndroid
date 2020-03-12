@@ -35,8 +35,7 @@ class RoboticsDeviceConnector : BluetoothGattCallback() {
     private var context: Context? = null
 
     private val roboticEventSerializer = RoboticsEventSerializer()
-    private val bluetoothBroadcastReceiver =
-        RoboticsBluetoothBroadcastReceiver(this)
+    private val bluetoothBroadcastReceiver = null
 
     val deviceService: RoboticsDeviceService
         get() {
@@ -63,14 +62,7 @@ class RoboticsDeviceConnector : BluetoothGattCallback() {
             return services.first { it is RoboticsSensorService } as RoboticsSensorService
         }
 
-    private val services = setOf(
-        RoboticsDeviceService(),
-        RoboticsLiveControllerService(),
-        RoboticsBatteryService(),
-        RoboticsConfigurationService(),
-        RoboticsMotorService(),
-        RoboticsSensorService()
-    )
+    private val services = emptySet<RoboticsBLEService>()
 
     fun connect(
         context: Context,
@@ -90,7 +82,7 @@ class RoboticsDeviceConnector : BluetoothGattCallback() {
     }
 
     fun registerConnectionListener(listener: RoboticsConnectionStatusListener) {
-        listener.onConnectionStateChanged(isConnected, isServiceDiscovered)
+        listener.onConnectionStateChanged(isConnected)
         connectionListeners.add(listener)
     }
 
@@ -103,7 +95,7 @@ class RoboticsDeviceConnector : BluetoothGattCallback() {
         isServiceDiscovered = false
         roboticEventSerializer.clear()
         connectionListeners.forEach {
-            it.onConnectionStateChanged(connected = false, serviceDiscovered = false)
+            it.onConnectionStateChanged(connected = false)
         }
         services.forEach {
             it.disconnect()
@@ -122,7 +114,7 @@ class RoboticsDeviceConnector : BluetoothGattCallback() {
                 ConnectionState.CONNECTED -> {
                     isConnected = true
                     connectionListeners.forEach {
-                        it.onConnectionStateChanged(true, isServiceDiscovered)
+                        it.onConnectionStateChanged(true)
                     }
                     if (status == BluetoothGatt.GATT_SUCCESS) {
                         gatt?.requestMtu(REQUESTED_MTU)
@@ -136,7 +128,7 @@ class RoboticsDeviceConnector : BluetoothGattCallback() {
                     isConnected = false
                     isServiceDiscovered = false
                     connectionListeners.forEach {
-                        it.onConnectionStateChanged(false, false)
+                        it.onConnectionStateChanged(false)
                     }
                 }
                 ConnectionState.DISCONNECTING, ConnectionState.CONNECTING -> Unit
@@ -155,20 +147,20 @@ class RoboticsDeviceConnector : BluetoothGattCallback() {
             onConnected?.invoke()
             onConnected = null
             connectionListeners.forEach {
-                it.onConnectionStateChanged(isConnected, true)
+                it.onConnectionStateChanged(isConnected)
             }
         }
     }
 
     override fun onCharacteristicChanged(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic) {
         moveToUIThread {
-            services.forEach { it.onCharacteristicChanged(gatt, characteristic) }
+            //services.forEach { it.onCharacteristicChanged(gatt, characteristic) }
         }
     }
 
     override fun onCharacteristicRead(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic, status: Int) {
         moveToUIThread {
-            services.forEach { it.onCharacteristicRead(gatt, characteristic, status) }
+            //services.forEach { it.onCharacteristicRead(gatt, characteristic, status) }
         }
     }
 
@@ -178,7 +170,7 @@ class RoboticsDeviceConnector : BluetoothGattCallback() {
         status: Int
     ) {
         moveToUIThread {
-            services.forEach { it.onCharacteristicWrite(gatt, characteristic, status) }
+            //services.forEach { it.onCharacteristicWrite(gatt, characteristic, status) }
         }
     }
 

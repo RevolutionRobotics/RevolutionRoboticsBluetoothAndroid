@@ -5,7 +5,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 
-class RoboticsBluetoothBroadcastReceiver(private val deviceConnector: RoboticsDeviceConnector) : BroadcastReceiver() {
+class RoboticsBluetoothBroadcastReceiver(private val deviceConnector: NRoboticsDeviceConnector) : BroadcastReceiver() {
 
     private val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
 
@@ -13,7 +13,7 @@ class RoboticsBluetoothBroadcastReceiver(private val deviceConnector: RoboticsDe
         if (intent?.action?.equals(BluetoothAdapter.ACTION_STATE_CHANGED) == true &&
             bluetoothAdapter.state == BluetoothAdapter.STATE_TURNING_OFF
         ) {
-            deviceConnector.disconnect()
+            deviceConnector.disconnect().enqueue()
         }
     }
 }

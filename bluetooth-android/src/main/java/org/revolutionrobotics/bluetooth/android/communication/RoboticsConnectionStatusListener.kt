@@ -1,5 +1,5 @@
 package org.revolutionrobotics.bluetooth.android.communication
 
 interface RoboticsConnectionStatusListener {
-    fun onConnectionStateChanged(connected: Boolean, serviceDiscovered: Boolean)
+    fun onConnectionStateChanged(connected: Boolean)
 }

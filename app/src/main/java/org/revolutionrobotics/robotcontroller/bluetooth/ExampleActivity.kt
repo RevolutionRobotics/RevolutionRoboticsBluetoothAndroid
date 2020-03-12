@@ -1,7 +1,6 @@
 package org.revolutionrobotics.robotcontroller.bluetooth
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
@@ -12,10 +11,8 @@ import androidx.core.net.toUri
 import com.revolution.robotics.core.utils.dynamicPermissions.DynamicPermissionHandler
 import com.revolution.robotics.core.utils.dynamicPermissions.DynamicPermissionListener
 import kotlinx.android.synthetic.main.acrtivity_example.*
+import org.revolutionrobotics.bluetooth.android.communication.NRoboticsDeviceConnector
 import org.revolutionrobotics.bluetooth.android.communication.RoboticsConnectionStatusListener
-import org.revolutionrobotics.bluetooth.android.communication.RoboticsDeviceConnector
-import org.revolutionrobotics.bluetooth.android.discover.RoboticsDeviceDiscoverer
-import org.revolutionrobotics.bluetooth.android.domain.Device
 import org.revolutionrobotics.bluetooth.android.service.RoboticsMotorService
 import org.revolutionrobotics.robotcontroller.bluetooth.connect.ConnectDialog
 import java.io.File
@@ -24,21 +21,19 @@ import java.nio.charset.Charset
 class ExampleActivity : AppCompatActivity(), DynamicPermissionListener,
     RoboticsConnectionStatusListener {
 
-    val deviceConnector = RoboticsDeviceConnector()
+    lateinit var deviceConnector: NRoboticsDeviceConnector
 
     private val permissionRequest = DynamicPermissionHandler.PermissionRequest(
         DynamicPermissionHandler(),
         mutableListOf(android.Manifest.permission.ACCESS_FINE_LOCATION)
     )
 
-    private var isConnected = false
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.acrtivity_example)
+        deviceConnector = NRoboticsDeviceConnector(this)
         permissionRequest.listener(this)
         permissionRequest.request(this)
-        isConnected = false
         deviceConnector.registerConnectionListener(this)
     }
 
@@ -64,11 +59,11 @@ class ExampleActivity : AppCompatActivity(), DynamicPermissionListener,
             ConnectDialog().show(supportFragmentManager, "connect")
         }
         btn_disconnect.setOnClickListener {
-            deviceConnector.disconnect()
+            deviceConnector.disconnect().enqueue()
         }
 
         btn_start_live_service.setOnClickListener {
-            if (isConnected) {
+            if (deviceConnector.isConnected) {
                 deviceConnector.configurationService.sendConfiguration(createConfigurationFile(), onSuccess = {
                     deviceConnector.liveControllerService.start()
                 }, onError = {
@@ -79,7 +74,7 @@ class ExampleActivity : AppCompatActivity(), DynamicPermissionListener,
         }
 
         btn_stop_live_service.setOnClickListener {
-            if (isConnected) {
+            if (deviceConnector.isConnected) {
                 deviceConnector.liveControllerService.stop()
             }
         }
@@ -88,7 +83,7 @@ class ExampleActivity : AppCompatActivity(), DynamicPermissionListener,
     private fun setupSeekbars() {
         seekbar_forward.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                if (isConnected) {
+                if (deviceConnector.isConnected) {
                     deviceConnector.liveControllerService.updateYDirection(progress)
                 }
             }
@@ -99,7 +94,7 @@ class ExampleActivity : AppCompatActivity(), DynamicPermissionListener,
 
         seekbar_right.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                if (isConnected) {
+                if (deviceConnector.isConnected) {
                     deviceConnector.liveControllerService.updateXDirection(progress)
                 }
             }
@@ -119,7 +114,7 @@ class ExampleActivity : AppCompatActivity(), DynamicPermissionListener,
     }
 
     private fun onButtonChanged(buttonIndex: Int, pressed: Boolean) {
-        if (isConnected) {
+        if (deviceConnector.isConnected) {
             if (pressed){
                 deviceConnector.liveControllerService.onButtonPressed(buttonIndex)
             } else {
@@ -130,7 +125,7 @@ class ExampleActivity : AppCompatActivity(), DynamicPermissionListener,
 
     private fun setupBottomButtons() {
         btn_read_battery.setOnClickListener {
-            if (isConnected) {
+            if (deviceConnector.isConnected) {
                 deviceConnector.batteryService.getPrimaryBattery(onComplete = {
                     Toast.makeText(this, "Battery level $it", Toast.LENGTH_LONG).show()
                 }, onError = {
@@ -140,7 +135,7 @@ class ExampleActivity : AppCompatActivity(), DynamicPermissionListener,
         }
 
         btn_read_system_info.setOnClickListener {
-            if (isConnected) {
+            if (deviceConnector.isConnected) {
                 deviceConnector.deviceService.getSystemId(onCompleted = {
                     Toast.makeText(this, "System id $it", Toast.LENGTH_LONG).show()
                 }, onError = {
@@ -150,7 +145,7 @@ class ExampleActivity : AppCompatActivity(), DynamicPermissionListener,
         }
 
         btn_send_test_file.setOnClickListener {
-            if (isConnected) {
+            if (deviceConnector.isConnected) {
                 deviceConnector.configurationService.testKit(createTestFile(), onSuccess = {
                     Toast.makeText(this, "Test kit sent!", Toast.LENGTH_LONG).show()
                 }, onError = {
@@ -160,7 +155,7 @@ class ExampleActivity : AppCompatActivity(), DynamicPermissionListener,
         }
 
         btn_read_motor_value.setOnClickListener {
-            if (isConnected) {
+            if (deviceConnector.isConnected) {
                 deviceConnector.motorService.read(RoboticsMotorService.Motor.M4, onComplete = {
                     Toast.makeText(this, "Motor info: ${it.joinToString()}", Toast.LENGTH_LONG).show()
                 }, onError = {
@@ -181,8 +176,7 @@ class ExampleActivity : AppCompatActivity(), DynamicPermissionListener,
 
     override fun onStop() {
         super.onStop()
-        isConnected = false
-        deviceConnector.disconnect()
+        deviceConnector.disconnect().enqueue()
     }
 
     private fun createConfigurationFile(): Uri = File("${applicationContext.filesDir}/config.json").apply {
@@ -199,10 +193,8 @@ class ExampleActivity : AppCompatActivity(), DynamicPermissionListener,
         writeText(assets.open("led_test.py").readBytes().toString(Charset.forName("UTF-8")))
     }.toUri()
 
-    override fun onConnectionStateChanged(connected: Boolean, serviceDiscovered: Boolean) {
-
-        isConnected = connected && serviceDiscovered
-        if (isConnected) {
+    override fun onConnectionStateChanged(connected: Boolean) {
+        if (connected) {
             connection_status_text.text = "Connected"
             btn_connect.visibility = View.GONE
             btn_disconnect.visibility = View.VISIBLE
