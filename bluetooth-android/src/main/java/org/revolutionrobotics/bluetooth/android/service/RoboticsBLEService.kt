@@ -38,6 +38,7 @@ abstract class RoboticsBLEService(
             .with { device, data -> callback.invoke(data) }
             .enqueue()
     }
+
     protected fun writeMessage(characteristic: BluetoothGattCharacteristic?, byteArray: ByteArray, done: () -> Unit) {
         characteristic?.let {
             deviceConnector.writeCharacteristic(

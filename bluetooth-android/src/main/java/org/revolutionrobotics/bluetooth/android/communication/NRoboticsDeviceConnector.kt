@@ -5,10 +5,7 @@ import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import android.content.Context
 import android.content.IntentFilter
-import no.nordicsemi.android.ble.BleManager
-import no.nordicsemi.android.ble.BleManagerCallbacks
-import no.nordicsemi.android.ble.ReadRequest
-import no.nordicsemi.android.ble.WriteRequest
+import no.nordicsemi.android.ble.*
 import no.nordicsemi.android.ble.data.Data
 import org.revolutionrobotics.bluetooth.android.domain.Device
 import org.revolutionrobotics.bluetooth.android.exception.BLEConnectionException

@@ -1,7 +1,5 @@
 package org.revolutionrobotics.bluetooth.android.service
 
-import android.bluetooth.BluetoothGatt
-import android.bluetooth.BluetoothGattCharacteristic
 import android.net.Uri
 import android.util.Base64
 import android.util.Log
@@ -9,10 +7,13 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import no.nordicsemi.android.ble.data.Data
+import org.revolutionrobotics.bluetooth.android.communication.LongMessageSplitter
 import org.revolutionrobotics.bluetooth.android.communication.NRoboticsDeviceConnector
-import org.revolutionrobotics.bluetooth.android.exception.*
-import org.revolutionrobotics.bluetooth.android.file.FileChunkHandler
+import org.revolutionrobotics.bluetooth.android.exception.BLEException
+import org.revolutionrobotics.bluetooth.android.exception.BLELongMessageIsAlreadyRunning
+import org.revolutionrobotics.bluetooth.android.exception.BLELongMessageValidationException
 import org.revolutionrobotics.bluetooth.android.file.MD5Checker
+import java.io.FileInputStream
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -54,7 +55,6 @@ class RoboticsConfigurationService(
 
     override val serviceId: UUID = UUID.fromString(SERVICE_ID)
     private val md5Checker = MD5Checker()
-    private val fileChunkHandler = FileChunkHandler()
 
     var success: (() -> Unit)? = null
     var error: ((exception: BLEException) -> Unit)? = null
@@ -179,20 +179,12 @@ class RoboticsConfigurationService(
     private fun startChunkSending() {
         Log.d(TAG, "Starting chunk sending")
         currentFile?.let {
-            fileChunkHandler.init(it, mtu - MTU_DECREASE, MESSAGE_TYPE_UPLOAD)
-        }
-        sendNextChunk()
-    }
-
-    private fun sendNextChunk() {
-        Log.d(TAG, "Sending chunk")
-        val nextChunk = fileChunkHandler.getNextChunk()
-        if (nextChunk != null) {
-            writeMessage(nextChunk) {
-                sendNextChunk()
+            writeLongMessage(
+                FileInputStream(it.path).readBytes(),
+                MESSAGE_TYPE_UPLOAD
+            ) {
+                sendFinalizeMessage()
             }
-        } else {
-            sendFinalizeMessage()
         }
     }
 
@@ -230,6 +222,18 @@ class RoboticsConfigurationService(
         ) {
             Log.d(TAG, "Write message sent: ${byteArray.toStringCustom()}")
             done.invoke()
+        }
+    }
+
+    private fun writeLongMessage(byteArray: ByteArray, firstByte: Byte, done: () -> Unit) {
+        service?.getCharacteristic(CHARACTERISTIC)?.let {
+            deviceConnector.writeCharacteristic(
+                it,
+                byteArray
+            )
+                .split(LongMessageSplitter(firstByte, mtu - MTU_DECREASE))
+                .done { done.invoke() }
+                .enqueue()
         }
     }
 
