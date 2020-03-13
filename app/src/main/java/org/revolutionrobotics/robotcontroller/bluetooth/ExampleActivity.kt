@@ -11,7 +11,7 @@ import androidx.core.net.toUri
 import com.revolution.robotics.core.utils.dynamicPermissions.DynamicPermissionHandler
 import com.revolution.robotics.core.utils.dynamicPermissions.DynamicPermissionListener
 import kotlinx.android.synthetic.main.acrtivity_example.*
-import org.revolutionrobotics.bluetooth.android.communication.NRoboticsDeviceConnector
+import org.revolutionrobotics.bluetooth.android.communication.RoboticsDeviceConnector
 import org.revolutionrobotics.bluetooth.android.communication.RoboticsConnectionStatusListener
 import org.revolutionrobotics.bluetooth.android.service.RoboticsMotorService
 import org.revolutionrobotics.robotcontroller.bluetooth.connect.ConnectDialog
@@ -21,7 +21,7 @@ import java.nio.charset.Charset
 class ExampleActivity : AppCompatActivity(), DynamicPermissionListener,
     RoboticsConnectionStatusListener {
 
-    lateinit var deviceConnector: NRoboticsDeviceConnector
+    lateinit var deviceConnector: RoboticsDeviceConnector
 
     private val permissionRequest = DynamicPermissionHandler.PermissionRequest(
         DynamicPermissionHandler(),
@@ -31,7 +31,7 @@ class ExampleActivity : AppCompatActivity(), DynamicPermissionListener,
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.acrtivity_example)
-        deviceConnector = NRoboticsDeviceConnector(this)
+        deviceConnector = RoboticsDeviceConnector(this)
         permissionRequest.listener(this)
         permissionRequest.request(this)
         deviceConnector.registerConnectionListener(this)

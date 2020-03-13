@@ -5,7 +5,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 
-class RoboticsBluetoothBroadcastReceiver(private val deviceConnector: NRoboticsDeviceConnector) : BroadcastReceiver() {
+class RoboticsBluetoothBroadcastReceiver(private val deviceConnector: RoboticsDeviceConnector) : BroadcastReceiver() {
 
     private val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
 

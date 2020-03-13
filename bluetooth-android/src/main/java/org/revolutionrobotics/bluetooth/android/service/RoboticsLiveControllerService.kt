@@ -1,7 +1,7 @@
 package org.revolutionrobotics.bluetooth.android.service
 
 import androidx.annotation.IntRange
-import org.revolutionrobotics.bluetooth.android.communication.NRoboticsDeviceConnector
+import org.revolutionrobotics.bluetooth.android.communication.RoboticsDeviceConnector
 import java.util.*
 import kotlin.concurrent.fixedRateTimer
 import kotlin.experimental.and
@@ -10,7 +10,7 @@ import kotlin.experimental.or
 
 @Suppress("TooManyFunctions")
 class RoboticsLiveControllerService(
-    deviceConnector: NRoboticsDeviceConnector
+    deviceConnector: RoboticsDeviceConnector
 ) : RoboticsBLEService(deviceConnector) {
 
     companion object {

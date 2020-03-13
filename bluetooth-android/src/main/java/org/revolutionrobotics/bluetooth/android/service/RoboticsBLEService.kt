@@ -1,17 +1,14 @@
 package org.revolutionrobotics.bluetooth.android.service
 
-import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattService
-import android.util.Log
-import no.nordicsemi.android.ble.callback.DataReceivedCallback
 import no.nordicsemi.android.ble.data.Data
-import org.revolutionrobotics.bluetooth.android.communication.NRoboticsDeviceConnector
+import org.revolutionrobotics.bluetooth.android.communication.RoboticsDeviceConnector
 import java.util.UUID
 
 abstract class RoboticsBLEService(
-    protected val deviceConnector: NRoboticsDeviceConnector
+    protected val deviceConnector: RoboticsDeviceConnector
 ) {
 
     abstract val serviceId: UUID
@@ -19,11 +16,8 @@ abstract class RoboticsBLEService(
     protected var service: BluetoothGattService? = null
     protected var bluetoothGatt: BluetoothGatt? = null
 
-    protected var eventSerializer: RoboticsEventSerializer? = null
-
-    open fun init(bluetoothGatt: BluetoothGatt, roboticsEventSerializer: RoboticsEventSerializer) {
+    open fun init(bluetoothGatt: BluetoothGatt) {
         this.bluetoothGatt = bluetoothGatt
-        eventSerializer = roboticsEventSerializer
         service = bluetoothGatt.getService(serviceId)
     }
 

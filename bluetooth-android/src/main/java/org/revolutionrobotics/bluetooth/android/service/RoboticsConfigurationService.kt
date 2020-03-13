@@ -8,7 +8,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import no.nordicsemi.android.ble.data.Data
 import org.revolutionrobotics.bluetooth.android.communication.LongMessageSplitter
-import org.revolutionrobotics.bluetooth.android.communication.NRoboticsDeviceConnector
+import org.revolutionrobotics.bluetooth.android.communication.RoboticsDeviceConnector
 import org.revolutionrobotics.bluetooth.android.exception.BLEException
 import org.revolutionrobotics.bluetooth.android.exception.BLELongMessageIsAlreadyRunning
 import org.revolutionrobotics.bluetooth.android.exception.BLELongMessageValidationException
@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit
 // TODO Remove logs
 @Suppress("TooManyFunctions")
 class RoboticsConfigurationService(
-    deviceConnector: NRoboticsDeviceConnector
+    deviceConnector: RoboticsDeviceConnector
 ) : RoboticsBLEService(deviceConnector) {
 
     companion object {

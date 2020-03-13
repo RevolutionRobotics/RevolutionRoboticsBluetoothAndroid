@@ -53,7 +53,7 @@ class ConnectDialog : DialogFragment() {
             connecting = true
             deviceDiscoverer.stopDiscovering()
             adapter.showConnecting(device)
-            getExampleActivity().deviceConnector.connect(activity!!, device, onConnected = {
+            getExampleActivity().deviceConnector.connect(device, onConnected = {
                 Toast.makeText(activity, "Connected", Toast.LENGTH_SHORT).show()
                 dismiss()
             }, onError = {

@@ -1,6 +1,6 @@
 package org.revolutionrobotics.bluetooth.android.service
 
-import org.revolutionrobotics.bluetooth.android.communication.NRoboticsDeviceConnector
+import org.revolutionrobotics.bluetooth.android.communication.RoboticsDeviceConnector
 import org.revolutionrobotics.bluetooth.android.exception.BLEConnectionException
 import org.revolutionrobotics.bluetooth.android.exception.BLEException
 import java.nio.ByteBuffer
@@ -8,7 +8,7 @@ import java.nio.ByteOrder
 import java.util.*
 
 class RoboticsSensorService(
-    deviceConnector: NRoboticsDeviceConnector
+    deviceConnector: RoboticsDeviceConnector
 ) : RoboticsBLEService(deviceConnector) {
 
     companion object {
