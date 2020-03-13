@@ -3,16 +3,13 @@ package org.revolutionrobotics.bluetooth.android.communication
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import android.content.Context
-import no.nordicsemi.android.ble.BleManager
-import no.nordicsemi.android.ble.BleManagerCallbacks
-import no.nordicsemi.android.ble.ReadRequest
-import no.nordicsemi.android.ble.WriteRequest
+import no.nordicsemi.android.ble.*
 import org.revolutionrobotics.bluetooth.android.domain.Device
 import org.revolutionrobotics.bluetooth.android.exception.BLEConnectionException
 import org.revolutionrobotics.bluetooth.android.exception.BLEException
 import org.revolutionrobotics.bluetooth.android.service.*
 
-class RoboticsDeviceConnector(context: Context): BleManager<BleManagerCallbacks>(context) {
+class RoboticsDeviceConnector(context: Context) : BleManager<BleManagerCallbacks>(context) {
 
     override fun getGattCallback(): BleManagerGattCallback {
         return GattCallback()
@@ -82,7 +79,7 @@ class RoboticsDeviceConnector(context: Context): BleManager<BleManagerCallbacks>
         callbacks.unregisterConnectionListener(listener)
     }
 
-    private inner class GattCallback: BleManagerGattCallback() {
+    private inner class GattCallback : BleManagerGattCallback() {
 
         override fun onDeviceDisconnected() {
             services.forEach {
@@ -100,7 +97,10 @@ class RoboticsDeviceConnector(context: Context): BleManager<BleManagerCallbacks>
 
         override fun initialize() {
             super.initialize()
-            gattConnection?.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_HIGH)
+            requestConnectionPriority(ConnectionPriorityRequest.CONNECTION_PRIORITY_HIGH).enqueue()
+            requestMtu(RoboticsConfigurationService.DEFAULT_MTU)
+                .with { device, mtu -> configurationService.mtu = mtu }
+                .enqueue()
         }
 
     }
