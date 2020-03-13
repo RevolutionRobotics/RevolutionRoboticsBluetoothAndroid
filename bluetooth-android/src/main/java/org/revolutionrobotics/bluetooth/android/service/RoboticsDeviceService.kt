@@ -1,11 +1,9 @@
 package org.revolutionrobotics.bluetooth.android.service
 
-import android.bluetooth.BluetoothGatt
-import android.bluetooth.BluetoothGattCharacteristic
 import org.revolutionrobotics.bluetooth.android.communication.NRoboticsDeviceConnector
 import org.revolutionrobotics.bluetooth.android.exception.BLEConnectionException
 import org.revolutionrobotics.bluetooth.android.exception.BLEException
-import java.util.UUID
+import java.util.*
 
 @Suppress("TooManyFunctions")
 class RoboticsDeviceService(
@@ -25,30 +23,6 @@ class RoboticsDeviceService(
     }
 
     override val serviceId: UUID = UUID.fromString(SERVICE_ID)
-    private val successCallbackMap = hashMapOf<UUID, (String) -> Unit>()
-    private val errorCallbackMap = hashMapOf<UUID, (exception: BLEException) -> Unit>()
-
-    override fun disconnect() {
-        successCallbackMap.clear()
-        errorCallbackMap.clear()
-        super.disconnect()
-    }
-
-    fun onCharacteristicRead(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic, status: Int) {
-        if (status == BluetoothGatt.GATT_SUCCESS) {
-            successCallbackMap[characteristic.uuid]?.let { callback ->
-                callback.invoke(characteristic.getStringValue(0))
-                successCallbackMap.remove(characteristic.uuid)
-                errorCallbackMap.remove(characteristic.uuid)
-            }
-        } else {
-            errorCallbackMap[characteristic.uuid]?.let { callback ->
-                callback.invoke(BLEConnectionException(status))
-                successCallbackMap.remove(characteristic.uuid)
-                errorCallbackMap.remove(characteristic.uuid)
-            }
-        }
-    }
 
     fun getSerialNumber(onCompleted: (String) -> Unit, onError: (exception: BLEException) -> Unit) {
         readCharacteristic(SERIAL_NUMBER_CHARACTERISTIC, onCompleted, onError)
@@ -83,14 +57,11 @@ class RoboticsDeviceService(
         onCompleted: (String) -> Unit,
         onError: (exception: BLEException) -> Unit
     ) {
-        successCallbackMap[uuid] = onCompleted
-        errorCallbackMap[uuid] = onError
-        bluetoothGatt?.let { gatt ->
-            service?.let { service ->
-                eventSerializer?.registerEvent {
-                    gatt.readCharacteristic(service.getCharacteristic(uuid))
-                }
-            }
+        service?.let { service ->
+            deviceConnector.readCharacteristic(service.getCharacteristic(uuid))
+                .with { _, data -> onCompleted(data.getStringValue(0) ?: "") }
+                .fail { _, status -> onError(BLEConnectionException(status)) }
+                .enqueue()
         }
     }
 }
