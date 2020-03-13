@@ -1,15 +1,9 @@
 package org.revolutionrobotics.bluetooth.android.service
 
-import android.bluetooth.BluetoothGatt
-import android.bluetooth.BluetoothGattCharacteristic
-import android.util.Log
 import androidx.annotation.IntRange
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import org.revolutionrobotics.bluetooth.android.communication.NRoboticsDeviceConnector
-import java.util.UUID
+import java.util.*
+import kotlin.concurrent.fixedRateTimer
 import kotlin.experimental.and
 import kotlin.experimental.inv
 import kotlin.experimental.or
@@ -39,12 +33,11 @@ class RoboticsLiveControllerService(
 
     override val serviceId: UUID = UUID.fromString(SERVICE_ID)
 
-    private var isRunning = false
-    private var schedulerJob: Job? = null
-
     private var x = DEFAULT_COORDINATE
     private var y = DEFAULT_COORDINATE
     private var buttonByte = 0.toByte()
+    private var counter = 0
+    private var timer: Timer? = null
 
     override fun disconnect() {
         stop()
@@ -54,30 +47,28 @@ class RoboticsLiveControllerService(
 
     fun start() {
         stop()
-        isRunning = true
-        var counter = 0
-        schedulerJob = GlobalScope.launch {
-            do {
-                if (isRunning) {
-                    counter++
-                    if (counter == COUNTER_MAX) {
-                        counter = 0
-                    }
-                    service?.getCharacteristic(CHARACTERISTIC_ID)?.let { characteristic ->
-                        characteristic.value = generateMessage(counter)
-                        bluetoothGatt?.writeCharacteristic(characteristic)
-                    }
-                }
-                delay(DELAY_TIME_IN_MILLIS)
-            } while (isRunning)
+        counter = 0
+        timer = fixedRateTimer("default", false, 0L, DELAY_TIME_IN_MILLIS) {
+            incrementCounter()
+            service?.getCharacteristic(CHARACTERISTIC_ID)?.let { characteristic ->
+                deviceConnector.writeCharacteristic(
+                    characteristic,
+                    generateMessage(counter)
+                ).enqueue()
+            }
         }
     }
 
     fun stop() {
         buttonByte = 0.toByte()
-        isRunning = false
-        schedulerJob?.cancel()
-        schedulerJob = null
+        timer?.cancel()
+    }
+
+    private fun incrementCounter() {
+        counter++
+        if (counter == COUNTER_MAX) {
+            counter = 0
+        }
     }
 
     fun updateXDirection(@IntRange(from = 0, to = 255) x: Int) {

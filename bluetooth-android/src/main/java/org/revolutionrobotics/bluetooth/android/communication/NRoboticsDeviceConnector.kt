@@ -121,22 +121,6 @@ class NRoboticsDeviceConnector(context: Context): BleManager<BleManagerCallbacks
         return super.writeCharacteristic(characteristic, data)
     }
 
-    public override fun writeCharacteristic(
-        characteristic: BluetoothGattCharacteristic?,
-        data: Data?
-    ): WriteRequest {
-        return super.writeCharacteristic(characteristic, data)
-    }
-
-    public override fun writeCharacteristic(
-        characteristic: BluetoothGattCharacteristic?,
-        data: ByteArray?,
-        offset: Int,
-        length: Int
-    ): WriteRequest {
-        return super.writeCharacteristic(characteristic, data, offset, length)
-    }
-
     public override fun readCharacteristic(characteristic: BluetoothGattCharacteristic?): ReadRequest {
         return super.readCharacteristic(characteristic)
     }
