@@ -1,12 +1,10 @@
 package org.revolutionrobotics.bluetooth.android.service
 
-import android.bluetooth.BluetoothGatt
-import android.bluetooth.BluetoothGattCharacteristic
 import org.revolutionrobotics.bluetooth.android.communication.NRoboticsDeviceConnector
 import org.revolutionrobotics.bluetooth.android.exception.BLEConnectionException
 import org.revolutionrobotics.bluetooth.android.exception.BLEException
 import java.nio.ByteBuffer
-import java.util.UUID
+import java.util.*
 
 class RoboticsMotorService(
     deviceConnector: NRoboticsDeviceConnector
@@ -33,9 +31,6 @@ class RoboticsMotorService(
 
     override val serviceId: UUID = UUID.fromString(SERVICE_ID)
 
-    private val successCallbackMap = hashMapOf<UUID, (ByteArray) -> Unit>()
-    private val errorCallbackMap = hashMapOf<UUID, (exception: BLEException) -> Unit>()
-
     enum class Motor(val characteristic: UUID) {
         M1(UUID.fromString("4bdfb409-93cc-433a-83bd-7f4f8e7eaf54")),
         M2(UUID.fromString("454885b9-c9d1-4988-9893-a0437d5e6e9f")),
@@ -45,39 +40,12 @@ class RoboticsMotorService(
         M6(UUID.fromString("8e4c474f-188e-4d2a-910a-cf66f674f569"))
     }
 
-    override fun disconnect() {
-        successCallbackMap.clear()
-        errorCallbackMap.clear()
-        super.disconnect()
-    }
-
     fun read(motor: Motor, onComplete: (ByteArray) -> Unit, onError: (exception: BLEException) -> Unit) {
         service?.getCharacteristic(motor.characteristic)?.let { characteristic ->
-            bluetoothGatt?.let { bluetoothGatt ->
-                successCallbackMap[motor.characteristic] = onComplete
-                errorCallbackMap[motor.characteristic] = onError
-
-                eventSerializer?.registerEvent {
-                    bluetoothGatt.readCharacteristic(characteristic)
-                }
-            }
+            deviceConnector.readCharacteristic(characteristic)
+                .with { _, data -> onComplete(data.value ?: ByteArray(0)) }
+                .fail { _, status -> onError(BLEConnectionException(status)) }
+                .enqueue()
         }
     }
-
-    fun onCharacteristicRead(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic, status: Int) {
-        if (status == BluetoothGatt.GATT_SUCCESS) {
-            successCallbackMap[characteristic.uuid]?.let { callback ->
-                callback.invoke(characteristic.value)
-                errorCallbackMap.remove(characteristic.uuid)
-                successCallbackMap.remove(characteristic.uuid)
-            }
-        } else {
-            errorCallbackMap[characteristic.uuid]?.let { callback ->
-                callback.invoke(BLEConnectionException(status))
-                successCallbackMap.remove(characteristic.uuid)
-                errorCallbackMap.remove(characteristic.uuid)
-            }
-        }
-    }
-
 }
