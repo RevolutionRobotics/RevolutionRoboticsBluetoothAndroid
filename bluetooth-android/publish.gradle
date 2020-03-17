@@ -11,7 +11,7 @@ ext {
     siteUrl = 'https://github.com/RevolutionRobotics/RevolutionRoboticsBluetoothAndroid'
     gitUrl = 'https://github.com/RevolutionRobotics/RevolutionRoboticsBluetoothAndroid.git'
 
-    libraryVersion = '1.0.0'
+    libraryVersion = '1.0.1'
 
     developerId = 'revorobotics'
     developerName = 'Revolution Robotics Foundation'
