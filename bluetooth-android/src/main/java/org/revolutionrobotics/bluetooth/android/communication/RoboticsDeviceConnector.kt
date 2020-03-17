@@ -98,9 +98,7 @@ class RoboticsDeviceConnector(context: Context) : BleManager<BleManagerCallbacks
         override fun initialize() {
             super.initialize()
             requestConnectionPriority(ConnectionPriorityRequest.CONNECTION_PRIORITY_HIGH).enqueue()
-            requestMtu(RoboticsConfigurationService.DEFAULT_MTU)
-                .with { device, mtu -> configurationService.mtu = mtu }
-                .enqueue()
+            requestMtu(RoboticsConfigurationService.DEFAULT_MTU).enqueue()
         }
 
     }

@@ -1,12 +1,16 @@
 package org.revolutionrobotics.bluetooth.android.service
 
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
 import androidx.annotation.IntRange
+import kotlinx.coroutines.Runnable
 import org.revolutionrobotics.bluetooth.android.communication.RoboticsDeviceConnector
 import java.util.*
-import kotlin.concurrent.fixedRateTimer
 import kotlin.experimental.and
 import kotlin.experimental.inv
 import kotlin.experimental.or
+
 
 @Suppress("TooManyFunctions")
 class RoboticsLiveControllerService(
@@ -37,7 +41,8 @@ class RoboticsLiveControllerService(
     private var y = DEFAULT_COORDINATE
     private var buttonByte = 0.toByte()
     private var counter = 0
-    private var timer: Timer? = null
+    var handler = Handler(Looper.getMainLooper())
+    var running = false
 
     override fun disconnect() {
         stop()
@@ -48,20 +53,37 @@ class RoboticsLiveControllerService(
     fun start() {
         stop()
         counter = 0
-        timer = fixedRateTimer("default", false, 0L, DELAY_TIME_IN_MILLIS) {
-            incrementCounter()
-            service?.getCharacteristic(CHARACTERISTIC_ID)?.let { characteristic ->
-                deviceConnector.writeCharacteristic(
-                    characteristic,
-                    generateMessage(counter)
-                ).enqueue()
+        running = true
+        handler.post(object : Runnable {
+            override fun run() {
+                incrementCounter()
+                val start = System.currentTimeMillis()
+                service?.getCharacteristic(CHARACTERISTIC_ID)?.let { characteristic ->
+                    deviceConnector.writeCharacteristic(
+                        characteristic,
+                        generateMessage(counter)
+                    )
+                        .done {
+                            val delay = System.currentTimeMillis() - start
+                            Log.d("Controller", "Controller state sent in $delay ms")
+                            if (running) {
+                                if (delay < DELAY_TIME_IN_MILLIS) {
+                                    handler.postDelayed(this, DELAY_TIME_IN_MILLIS - delay)
+                                } else {
+                                    handler.post(this)
+                                }
+                            }
+                        }
+                        .enqueue()
+                }
+
             }
-        }
+        })
     }
 
     fun stop() {
         buttonByte = 0.toByte()
-        timer?.cancel()
+        running = false
     }
 
     private fun incrementCounter() {

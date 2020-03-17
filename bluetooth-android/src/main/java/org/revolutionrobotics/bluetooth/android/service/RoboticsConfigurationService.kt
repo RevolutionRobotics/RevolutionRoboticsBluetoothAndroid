@@ -46,8 +46,6 @@ class RoboticsConfigurationService(
         const val MD5_LENGTH = 16
         const val DEFAULT_MTU = 512
 
-        const val MTU_DECREASE = 4
-
         const val TAG = "LongMessage"
 
         val CHARACTERISTIC: UUID = UUID.fromString("d59bb321-7218-4fb9-abac-2f6814f31a4d")
@@ -62,7 +60,6 @@ class RoboticsConfigurationService(
     var validationCounter = 0
 
     var uploadStarted = false
-    var mtu = DEFAULT_MTU
 
     fun updateFirmware(
         file: Uri,
