@@ -1,27 +1,28 @@
 package org.revolutionrobotics.bluetooth.android.service
 
-import android.bluetooth.BluetoothGatt
-import android.bluetooth.BluetoothGattCharacteristic
 import android.net.Uri
 import android.util.Base64
 import android.util.Log
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.revolutionrobotics.bluetooth.android.exception.BLEConnectionException
+import no.nordicsemi.android.ble.data.Data
+import org.revolutionrobotics.bluetooth.android.communication.LongMessageSplitter
+import org.revolutionrobotics.bluetooth.android.communication.RoboticsDeviceConnector
 import org.revolutionrobotics.bluetooth.android.exception.BLEException
 import org.revolutionrobotics.bluetooth.android.exception.BLELongMessageIsAlreadyRunning
 import org.revolutionrobotics.bluetooth.android.exception.BLELongMessageValidationException
-import org.revolutionrobotics.bluetooth.android.exception.BLEMessageInterruptedException
-import org.revolutionrobotics.bluetooth.android.exception.BLESendingTimeoutException
-import org.revolutionrobotics.bluetooth.android.file.FileChunkHandler
 import org.revolutionrobotics.bluetooth.android.file.MD5Checker
-import java.util.UUID
+import java.io.FileInputStream
+import java.util.*
 import java.util.concurrent.TimeUnit
+
 
 // TODO Remove logs
 @Suppress("TooManyFunctions")
-class RoboticsConfigurationService : RoboticsBLEService() {
+class RoboticsConfigurationService(
+    deviceConnector: RoboticsDeviceConnector
+) : RoboticsBLEService(deviceConnector) {
 
     companion object {
         const val SERVICE_ID = "97148a03-5b9d-11e9-8647-d663bd873d93"
@@ -42,11 +43,8 @@ class RoboticsConfigurationService : RoboticsBLEService() {
         const val STATUS_READY = 3.toByte()
         const val STATUS_VALIDATION_ERROR = 4.toByte()
 
-        const val MAX_VALIDATION_COUNT = 30
         const val MD5_LENGTH = 16
         const val DEFAULT_MTU = 512
-
-        const val MTU_DECREASE = 4
 
         const val TAG = "LongMessage"
 
@@ -55,7 +53,6 @@ class RoboticsConfigurationService : RoboticsBLEService() {
 
     override val serviceId: UUID = UUID.fromString(SERVICE_ID)
     private val md5Checker = MD5Checker()
-    private val fileChunkHandler = FileChunkHandler()
 
     var success: (() -> Unit)? = null
     var error: ((exception: BLEException) -> Unit)? = null
@@ -63,13 +60,20 @@ class RoboticsConfigurationService : RoboticsBLEService() {
     var validationCounter = 0
 
     var uploadStarted = false
-    var mtu = DEFAULT_MTU
 
-    fun updateFirmware(file: Uri, onSuccess: () -> Unit, onError: (exception: BLEException) -> Unit) {
+    fun updateFirmware(
+        file: Uri,
+        onSuccess: () -> Unit,
+        onError: (exception: BLEException) -> Unit
+    ) {
         initLongMessage(file, onSuccess, onError, FUNCTION_TYPE_FIRMWARE)
     }
 
-    fun updateFramework(file: Uri, onSuccess: () -> Unit, onError: (exception: BLEException) -> Unit) {
+    fun updateFramework(
+        file: Uri,
+        onSuccess: () -> Unit,
+        onError: (exception: BLEException) -> Unit
+    ) {
         initLongMessage(file, onSuccess, onError, FUNCTION_TYPE_FRAMEWORK)
     }
 
@@ -77,7 +81,11 @@ class RoboticsConfigurationService : RoboticsBLEService() {
         initLongMessage(file, onSuccess, onError, FUNCTION_TYPE_TESTKIT)
     }
 
-    fun sendConfiguration(file: Uri, onSuccess: () -> Unit, onError: (exception: BLEException) -> Unit) {
+    fun sendConfiguration(
+        file: Uri,
+        onSuccess: () -> Unit,
+        onError: (exception: BLEException) -> Unit
+    ) {
         initLongMessage(file, onSuccess, onError, FUNCTION_TYPE_CONFIGURATION)
     }
 
@@ -104,149 +112,129 @@ class RoboticsConfigurationService : RoboticsBLEService() {
         currentFile = file
         success = onSuccess
         error = onError
-        sendSelectLongMessage(functionType)
+        sendTypeSelectMessage(functionType)
     }
 
-    private fun sendSelectLongMessage(typeId: Byte) {
-        writeMessage(ByteArray(2).apply {
-            set(0, MESSAGE_TYPE_SELECT)
-            set(1, typeId)
-        })
-    }
-
-    private fun checkMd5(serverMd5: ByteArray) {
-        currentFile?.let { uri ->
-            val currentMD5 = MD5Checker().calculateMD5Hash(uri)
-            if (currentMD5.contentEquals(serverMd5)) {
-                uploadStarted = true
-                sendFinalizeMessage()
-            } else {
-                startUploading(currentMD5)
-            }
-        }
-    }
-
-    private fun readStatus() {
-        service?.getCharacteristic(CHARACTERISTIC)?.let { characteristic ->
-            bluetoothGatt?.let { bluetoothGatt ->
-                eventSerializer?.registerEvent {
-                    bluetoothGatt.readCharacteristic(characteristic)
+    private fun sendTypeSelectMessage(functionType: Byte) {
+        writeMessage(generateSelectTypeMessage(functionType)) {
+            readMessage { data ->
+                if (data.value?.get(0) == STATUS_UNUSED
+                    || data.value?.get(0) == STATUS_UPLOAD
+                ) {
+                    Log.d(TAG, "Unused --> start uploading")
+                    sendInit()
+                } else if (data.value?.get(0) == STATUS_READY) {
+                    Log.d(TAG, "Ready --> checkMd5")
+                    service?.getCharacteristic(CHARACTERISTIC)?.let {
+                        if (checkMd5(it.value.copyOfRange(1, MD5_LENGTH + 1))) {
+                            sendFinalizeMessage()
+                        } else {
+                            sendInit()
+                        }
+                    }
                 }
             }
         }
     }
 
-    private fun startUploading(fileMD5: ByteArray?) {
+    private fun generateSelectTypeMessage(functionType: Byte) = ByteArray(2).apply {
+        set(0, MESSAGE_TYPE_SELECT)
+        set(1, functionType)
+    }
+
+
+    private fun checkMd5(serverMd5: ByteArray): Boolean {
+        currentFile?.let { uri ->
+            val currentMD5 = MD5Checker().calculateMD5Hash(uri)
+            return if (currentMD5.contentEquals(serverMd5)) {
+                uploadStarted = true
+                true
+            } else {
+                false
+            }
+        }
+        return false
+    }
+
+    private fun sendInit() {
         uploadStarted = true
         currentFile?.let { currentFile ->
-            val md5 = fileMD5 ?: md5Checker.calculateMD5Hash(currentFile)
+            val md5 = md5Checker.calculateMD5Hash(currentFile)
             Log.e(TAG, "MD5: ${Base64.encodeToString(md5, Base64.DEFAULT)}")
             ByteArray(MD5_LENGTH + 1).apply {
                 set(0, MESSAGE_TYPE_INIT)
                 for (index in 0 until MD5_LENGTH) {
                     set(index + 1, md5[index])
                 }
-                writeMessage(this)
+                writeMessage(this) {
+                    startChunkSending()
+                }
             }
         }
     }
 
     private fun startChunkSending() {
+        Log.d(TAG, "Starting chunk sending")
         currentFile?.let {
-            fileChunkHandler.init(it, mtu - MTU_DECREASE, MESSAGE_TYPE_UPLOAD)
-        }
-        sendNextChunk()
-    }
-
-    private fun sendNextChunk() {
-        val nextChunk = fileChunkHandler.getNextChunk()
-        if (nextChunk != null) {
-            writeMessage(nextChunk)
-        } else {
-            sendFinalizeMessage()
+            writeLongMessage(
+                FileInputStream(it.path).readBytes(),
+                MESSAGE_TYPE_UPLOAD
+            ) {
+                sendFinalizeMessage()
+            }
         }
     }
 
     private fun sendFinalizeMessage() {
+        Log.d(TAG, "Sending finalize")
         ByteArray(1).apply {
             set(0, MESSAGE_TYPE_FINALIZE)
-            writeMessage(this)
+            writeMessage(this) {
+                readMessage {
+                    if (it.value?.get(0) == STATUS_READY) {
+                        Log.d(TAG, "Ready --> send success event")
+                        success?.invoke()
+                        resetVariables()
+                    } else {
+                        Log.d(TAG, "Error --> send error event")
+                        error?.invoke(BLELongMessageValidationException())
+                        resetVariables()
+                    }
+                }
+            }
         }
     }
 
-    private fun writeMessage(byteArray: ByteArray) {
-        service?.getCharacteristic(CHARACTERISTIC)?.let { characteristic ->
-            characteristic.writeType = BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
-            characteristic.value = byteArray
-            val wasMessageSent = bluetoothGatt?.writeCharacteristic(characteristic) ?: false
-            Log.d(TAG, "Write message sent $wasMessageSent  ${byteArray.toStringCustom()}")
-            if (!wasMessageSent) {
-                onError(BLEMessageInterruptedException())
-            }
+    private fun readMessage(callback: (Data) -> Unit) {
+        readMessage(service?.getCharacteristic(CHARACTERISTIC)) {
+            Log.d(TAG, "Received: " + (it.value?.get(0) ?: "null"))
+            callback.invoke(it)
+        }
+    }
+
+    private fun writeMessage(byteArray: ByteArray, done: () -> Unit) {
+        writeMessage(
+            service?.getCharacteristic(CHARACTERISTIC),
+            byteArray
+        ) {
+            Log.d(TAG, "Write message sent: ${byteArray.toStringCustom()}")
+            done.invoke()
+        }
+    }
+
+    private fun writeLongMessage(byteArray: ByteArray, messageType: Byte, done: () -> Unit) {
+        service?.getCharacteristic(CHARACTERISTIC)?.let {
+            deviceConnector.writeCharacteristic(
+                it,
+                byteArray
+            )
+                .split(LongMessageSplitter(messageType))
+                .done { done.invoke() }
+                .enqueue()
         }
     }
 
     private fun isUploadInProgress() = currentFile != null
-
-    @Suppress("ReturnCount")
-    private fun validateCharacteristicEvent(characteristic: BluetoothGattCharacteristic, status: Int): Boolean {
-        if (characteristic.uuid != CHARACTERISTIC || currentFile == null) {
-            return false
-        }
-        if (status != BluetoothGatt.GATT_SUCCESS) {
-            onError(BLEConnectionException(status))
-            return false
-        }
-
-        return true
-    }
-
-    override fun onCharacteristicRead(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic, status: Int) {
-        if (!validateCharacteristicEvent(characteristic, status)) {
-            return
-        }
-        Log.d(TAG, "Read happened: ${characteristic.value.toStringCustom()}")
-        when (characteristic.value[0]) {
-            STATUS_UNUSED -> {
-                Log.d(TAG, "Unused --> start uploading")
-                startUploading(null)
-            }
-            STATUS_UPLOAD -> {
-                Log.d(TAG, "Upload --> checkMd5")
-                startUploading(null)
-            }
-            STATUS_VALIDATION -> handleValidationStatus()
-            STATUS_READY -> handleReadyStatus(characteristic)
-            STATUS_VALIDATION_ERROR -> onError(BLELongMessageValidationException())
-        }
-    }
-
-    private fun onError(exception: BLEException) {
-        Log.d(TAG, "Error --> send error event")
-        error?.invoke(exception)
-        resetVariables()
-    }
-
-    private fun handleValidationStatus() {
-        Log.d(TAG, "Validation attempt:$validationCounter")
-        if (validationCounter < MAX_VALIDATION_COUNT) {
-            readStatus()
-            validationCounter++
-        } else {
-            onError(BLESendingTimeoutException())
-        }
-    }
-
-    private fun handleReadyStatus(characteristic: BluetoothGattCharacteristic) {
-        if (!uploadStarted) {
-            Log.d(TAG, "Ready --> checkMd5")
-            checkMd5(characteristic.value.copyOfRange(1, MD5_LENGTH + 1))
-        } else {
-            Log.d(TAG, "Ready --> send success event")
-            success?.invoke()
-            resetVariables()
-        }
-    }
 
     private fun resetVariables() {
         uploadStarted = false
@@ -260,37 +248,6 @@ class RoboticsConfigurationService : RoboticsBLEService() {
         super.disconnect()
         resetVariables()
     }
-
-    override fun onCharacteristicWrite(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic, status: Int) {
-        if (!validateCharacteristicEvent(characteristic, status)) {
-            return
-        }
-        Log.d(
-            TAG,
-            "Write happened! status: $status First byte: ${characteristic.value[0]} " +
-                    "Total message: ${characteristic.value.toStringCustom()}"
-        )
-        when (characteristic.value[0]) {
-            MESSAGE_TYPE_SELECT -> {
-                Log.d(TAG, "Select --> read status")
-                readStatus()
-            }
-            MESSAGE_TYPE_INIT -> {
-                Log.d(TAG, "Init --> startChunkSending")
-                startChunkSending()
-            }
-            MESSAGE_TYPE_UPLOAD -> {
-                Log.d(TAG, "Upload --> sendNextChunk")
-                sendNextChunk()
-            }
-            MESSAGE_TYPE_FINALIZE -> {
-                Log.d(TAG, "Finalize --> startStatusReadingLoop")
-                readStatus()
-            }
-        }
-    }
-
-    override fun onCharacteristicChanged(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic) = Unit
 
     private fun ByteArray.toStringCustom(): String = this.joinToString { it.toString() }
 }

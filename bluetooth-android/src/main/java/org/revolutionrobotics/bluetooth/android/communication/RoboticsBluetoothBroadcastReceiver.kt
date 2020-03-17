@@ -13,7 +13,7 @@ class RoboticsBluetoothBroadcastReceiver(private val deviceConnector: RoboticsDe
         if (intent?.action?.equals(BluetoothAdapter.ACTION_STATE_CHANGED) == true &&
             bluetoothAdapter.state == BluetoothAdapter.STATE_TURNING_OFF
         ) {
-            deviceConnector.disconnect()
+            deviceConnector.disconnect().enqueue()
         }
     }
 }

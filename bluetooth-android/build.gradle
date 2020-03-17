@@ -31,8 +31,10 @@ def coroutines = "1.1.1"
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+    api 'no.nordicsemi.android.support.v18:scanner:1.4.2'
+    api 'no.nordicsemi.android:ble:2.1.1'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'androidx.annotation:annotation:1.0.0'
+    implementation 'androidx.annotation:annotation:1.1.0'
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines"
 }

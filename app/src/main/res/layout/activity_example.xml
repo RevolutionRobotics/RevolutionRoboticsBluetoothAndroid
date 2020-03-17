@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:ignore="HardcodedText">
+
+    <LinearLayout
+            android:id="@+id/connection_status"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="#333"
+            android:padding="8dp">
+
+        <TextView
+                android:id="@+id/connection_status_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Not connected"
+                android:textColor="#fff"/>
+
+        <Button
+                android:id="@+id/btn_connect"
+                android:layout_width="148dp"
+                android:layout_height="wrap_content"
+                android:text="Connect" />
+
+        <Button
+                android:id="@+id/btn_disconnect"
+                android:layout_width="148dp"
+                android:layout_height="wrap_content"
+                android:text="Disconnect"/>
+    </LinearLayout>
+
+
+    <Button
+            android:id="@+id/btn_start_live_service"
+            android:layout_width="148dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="116dp"
+            android:layout_marginTop="8dp"
+            android:text="Start live service"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/connection_status" />
+
+    <Button
+            android:id="@+id/btn_stop_live_service"
+            android:layout_width="148dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="116dp"
+            android:text="Stop live service"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/connection_status" />
+
+    <TextView
+            android:id="@+id/txt_backward"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="8dp"
+            android:text="Backward"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btn_stop_live_service" />
+
+    <TextView
+            android:id="@+id/txt_forward"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="32dp"
+            android:text="Forward"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btn_stop_live_service" />
+
+    <SeekBar
+            android:id="@+id/seekbar_forward"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:max="255"
+            android:progress="127"
+            app:layout_constraintEnd_toEndOf="@id/txt_forward"
+            app:layout_constraintStart_toStartOf="@id/txt_backward"
+            app:layout_constraintTop_toBottomOf="@id/txt_backward" />
+
+    <TextView
+            android:id="@+id/txt_left"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="8dp"
+            android:text="Left"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/seekbar_forward" />
+
+    <TextView
+            android:id="@+id/txt_right"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="32dp"
+            android:text="Right"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/seekbar_forward" />
+
+    <SeekBar
+            android:id="@+id/seekbar_right"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:max="255"
+            android:progress="127"
+            app:layout_constraintEnd_toEndOf="@id/txt_right"
+            app:layout_constraintStart_toStartOf="@id/txt_left"
+            app:layout_constraintTop_toBottomOf="@id/txt_left" />
+
+    <Button
+            android:id="@+id/btn_1"
+            android:layout_width="64dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="56dp"
+            android:layout_marginTop="8dp"
+            android:text="BTN1"
+            app:layout_constraintEnd_toStartOf="@id/btn_2"
+            app:layout_constraintHorizontal_chainStyle="spread"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/seekbar_right" />
+
+    <Button
+            android:id="@+id/btn_2"
+            android:layout_width="64dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="BTN2"
+            app:layout_constraintEnd_toStartOf="@id/btn_3"
+            app:layout_constraintHorizontal_chainStyle="spread"
+            app:layout_constraintStart_toEndOf="@id/btn_1"
+            app:layout_constraintTop_toBottomOf="@id/seekbar_right" />
+
+    <Button
+            android:id="@+id/btn_3"
+            android:layout_width="64dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="BTN3"
+            app:layout_constraintEnd_toStartOf="@id/btn_4"
+            app:layout_constraintHorizontal_chainStyle="spread"
+            app:layout_constraintStart_toEndOf="@id/btn_2"
+            app:layout_constraintTop_toBottomOf="@id/seekbar_right" />
+
+    <Button
+            android:id="@+id/btn_4"
+            android:layout_width="64dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="BTN4"
+            app:layout_constraintEnd_toStartOf="@id/btn_5"
+            app:layout_constraintHorizontal_chainStyle="spread"
+            app:layout_constraintStart_toEndOf="@id/btn_3"
+            app:layout_constraintTop_toBottomOf="@id/seekbar_right" />
+
+    <Button
+            android:id="@+id/btn_5"
+            android:layout_width="64dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="BTN5"
+            app:layout_constraintEnd_toStartOf="@id/btn_6"
+            app:layout_constraintHorizontal_chainStyle="spread"
+            app:layout_constraintStart_toEndOf="@id/btn_4"
+            app:layout_constraintTop_toBottomOf="@id/seekbar_right" />
+
+    <Button
+            android:id="@+id/btn_6"
+            android:layout_width="64dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="56dp"
+            android:text="BTN6"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_chainStyle="spread"
+            app:layout_constraintStart_toEndOf="@id/btn_5"
+            app:layout_constraintTop_toBottomOf="@id/seekbar_right" />
+
+
+    <Button
+            android:id="@+id/btn_read_battery"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="8dp"
+            android:text="Read battery"
+            android:textSize="12sp"
+            app:layout_constraintEnd_toStartOf="@id/btn_read_system_info"
+            app:layout_constraintHorizontal_chainStyle="spread"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btn_1" />
+
+    <Button
+            android:id="@+id/btn_read_system_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:text="Read system info"
+            android:textSize="12sp"
+            app:layout_constraintEnd_toStartOf="@id/btn_send_test_file"
+            app:layout_constraintHorizontal_chainStyle="spread"
+            app:layout_constraintStart_toEndOf="@id/btn_read_battery"
+            app:layout_constraintTop_toBottomOf="@id/btn_1" />
+
+    <Button
+            android:id="@+id/btn_send_test_file"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:text="Send test file"
+            android:textSize="12sp"
+            app:layout_constraintEnd_toStartOf="@id/btn_read_motor_value"
+            app:layout_constraintHorizontal_chainStyle="spread"
+            app:layout_constraintStart_toEndOf="@id/btn_read_system_info"
+            app:layout_constraintTop_toBottomOf="@id/btn_1" />
+
+    <Button
+            android:id="@+id/btn_read_motor_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:text="Read motor value"
+            android:textSize="12sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_chainStyle="spread"
+            app:layout_constraintStart_toEndOf="@id/btn_send_test_file"
+            app:layout_constraintTop_toBottomOf="@id/btn_1" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

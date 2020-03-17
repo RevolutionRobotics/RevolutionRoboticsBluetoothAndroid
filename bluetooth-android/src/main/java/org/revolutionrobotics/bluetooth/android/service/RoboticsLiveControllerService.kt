@@ -1,20 +1,21 @@
 package org.revolutionrobotics.bluetooth.android.service
 
-import android.bluetooth.BluetoothGatt
-import android.bluetooth.BluetoothGattCharacteristic
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.annotation.IntRange
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import java.util.UUID
+import kotlinx.coroutines.Runnable
+import org.revolutionrobotics.bluetooth.android.communication.RoboticsDeviceConnector
+import java.util.*
 import kotlin.experimental.and
 import kotlin.experimental.inv
 import kotlin.experimental.or
 
+
 @Suppress("TooManyFunctions")
-class RoboticsLiveControllerService : RoboticsBLEService() {
+class RoboticsLiveControllerService(
+    deviceConnector: RoboticsDeviceConnector
+) : RoboticsBLEService(deviceConnector) {
 
     companion object {
         const val SERVICE_ID = "d2d5558c-5b9d-11e9-8647-d663bd873d93"
@@ -36,12 +37,12 @@ class RoboticsLiveControllerService : RoboticsBLEService() {
 
     override val serviceId: UUID = UUID.fromString(SERVICE_ID)
 
-    private var isRunning = false
-    private var schedulerJob: Job? = null
-
     private var x = DEFAULT_COORDINATE
     private var y = DEFAULT_COORDINATE
     private var buttonByte = 0.toByte()
+    private var counter = 0
+    var handler = Handler(Looper.getMainLooper())
+    var running = false
 
     override fun disconnect() {
         stop()
@@ -51,30 +52,45 @@ class RoboticsLiveControllerService : RoboticsBLEService() {
 
     fun start() {
         stop()
-        isRunning = true
-        var counter = 0
-        schedulerJob = GlobalScope.launch {
-            do {
-                if (isRunning) {
-                    counter++
-                    if (counter == COUNTER_MAX) {
-                        counter = 0
-                    }
-                    service?.getCharacteristic(CHARACTERISTIC_ID)?.let { characteristic ->
-                        characteristic.value = generateMessage(counter)
-                        bluetoothGatt?.writeCharacteristic(characteristic)
-                    }
+        counter = 0
+        running = true
+        handler.post(object : Runnable {
+            override fun run() {
+                incrementCounter()
+                val start = System.currentTimeMillis()
+                service?.getCharacteristic(CHARACTERISTIC_ID)?.let { characteristic ->
+                    deviceConnector.writeCharacteristic(
+                        characteristic,
+                        generateMessage(counter)
+                    )
+                        .done {
+                            val delay = System.currentTimeMillis() - start
+                            Log.d("Controller", "Controller state sent in $delay ms")
+                            if (running) {
+                                if (delay < DELAY_TIME_IN_MILLIS) {
+                                    handler.postDelayed(this, DELAY_TIME_IN_MILLIS - delay)
+                                } else {
+                                    handler.post(this)
+                                }
+                            }
+                        }
+                        .enqueue()
                 }
-                delay(DELAY_TIME_IN_MILLIS)
-            } while (isRunning)
-        }
+
+            }
+        })
     }
 
     fun stop() {
         buttonByte = 0.toByte()
-        isRunning = false
-        schedulerJob?.cancel()
-        schedulerJob = null
+        running = false
+    }
+
+    private fun incrementCounter() {
+        counter++
+        if (counter == COUNTER_MAX) {
+            counter = 0
+        }
     }
 
     fun updateXDirection(@IntRange(from = 0, to = 255) x: Int) {
@@ -110,12 +126,4 @@ class RoboticsLiveControllerService : RoboticsBLEService() {
         }
         return res
     }
-
-    override fun onCharacteristicRead(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic, status: Int) =
-        Unit
-
-    override fun onCharacteristicWrite(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic, status: Int) =
-        Unit
-
-    override fun onCharacteristicChanged(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic) = Unit
 }

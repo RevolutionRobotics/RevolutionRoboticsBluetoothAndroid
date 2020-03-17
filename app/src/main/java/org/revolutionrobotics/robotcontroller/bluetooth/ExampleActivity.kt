@@ -1,38 +1,45 @@
 package org.revolutionrobotics.robotcontroller.bluetooth
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.net.Uri
 import android.os.Bundle
+import android.view.View
 import android.widget.SeekBar
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import com.revolution.robotics.core.utils.dynamicPermissions.DynamicPermissionHandler
 import com.revolution.robotics.core.utils.dynamicPermissions.DynamicPermissionListener
-import kotlinx.android.synthetic.main.acrtivity_example.*
+import kotlinx.android.synthetic.main.activity_example.*
 import org.revolutionrobotics.bluetooth.android.communication.RoboticsDeviceConnector
-import org.revolutionrobotics.bluetooth.android.discover.RoboticsDeviceDiscoverer
+import org.revolutionrobotics.bluetooth.android.communication.RoboticsConnectionStatusListener
 import org.revolutionrobotics.bluetooth.android.service.RoboticsMotorService
+import org.revolutionrobotics.robotcontroller.bluetooth.connect.ConnectDialog
 import java.io.File
 import java.nio.charset.Charset
 
-class ExampleActivity : Activity(), DynamicPermissionListener {
+class ExampleActivity : AppCompatActivity(), DynamicPermissionListener,
+    RoboticsConnectionStatusListener {
 
-    private val deviceDiscoverer = RoboticsDeviceDiscoverer()
-    private val deviceConnector = RoboticsDeviceConnector()
+    lateinit var deviceConnector: RoboticsDeviceConnector
+
     private val permissionRequest = DynamicPermissionHandler.PermissionRequest(
         DynamicPermissionHandler(),
         mutableListOf(android.Manifest.permission.ACCESS_FINE_LOCATION)
     )
 
-    private var isConnected = false
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.acrtivity_example)
+        setContentView(R.layout.activity_example)
+        deviceConnector = RoboticsDeviceConnector(this)
         permissionRequest.listener(this)
         permissionRequest.request(this)
-        isConnected = false
+        deviceConnector.registerConnectionListener(this)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        deviceConnector.unregisterConnectionListener(this)
     }
 
     override fun onAllPermissionsGranted() {
@@ -49,29 +56,14 @@ class ExampleActivity : Activity(), DynamicPermissionListener {
     @SuppressLint("MissingPermission")
     private fun setupConnectionButtons() {
         btn_connect.setOnClickListener {
-            deviceDiscoverer.discoverRobots(this) { devices ->
-                if (devices.isNotEmpty()) {
-                    Toast.makeText(this, "Connecting", Toast.LENGTH_LONG).show()
-                    deviceConnector.connect(this, devices.first(), onConnected = {
-                        isConnected = true
-                        Toast.makeText(this, "Connected", Toast.LENGTH_LONG).show()
-                    }, onDisconnected = {
-                        isConnected = false
-                        Toast.makeText(this, "Disconnected", Toast.LENGTH_LONG).show()
-                    }, onError = {
-                        isConnected = false
-                        Toast.makeText(this, "Connection error: ${it.message}", Toast.LENGTH_LONG).show()
-                    })
-                }
-            }
+            ConnectDialog().show(supportFragmentManager, "connect")
         }
         btn_disconnect.setOnClickListener {
-            deviceDiscoverer.stopDiscovering()
-            deviceConnector.disconnect()
+            deviceConnector.disconnect().enqueue()
         }
 
         btn_start_live_service.setOnClickListener {
-            if (isConnected) {
+            if (deviceConnector.isConnected) {
                 deviceConnector.configurationService.sendConfiguration(createConfigurationFile(), onSuccess = {
                     deviceConnector.liveControllerService.start()
                 }, onError = {
@@ -82,7 +74,7 @@ class ExampleActivity : Activity(), DynamicPermissionListener {
         }
 
         btn_stop_live_service.setOnClickListener {
-            if (isConnected) {
+            if (deviceConnector.isConnected) {
                 deviceConnector.liveControllerService.stop()
             }
         }
@@ -91,7 +83,7 @@ class ExampleActivity : Activity(), DynamicPermissionListener {
     private fun setupSeekbars() {
         seekbar_forward.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                if (isConnected) {
+                if (deviceConnector.isConnected) {
                     deviceConnector.liveControllerService.updateYDirection(progress)
                 }
             }
@@ -102,7 +94,7 @@ class ExampleActivity : Activity(), DynamicPermissionListener {
 
         seekbar_right.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                if (isConnected) {
+                if (deviceConnector.isConnected) {
                     deviceConnector.liveControllerService.updateXDirection(progress)
                 }
             }
@@ -122,7 +114,7 @@ class ExampleActivity : Activity(), DynamicPermissionListener {
     }
 
     private fun onButtonChanged(buttonIndex: Int, pressed: Boolean) {
-        if (isConnected) {
+        if (deviceConnector.isConnected) {
             if (pressed){
                 deviceConnector.liveControllerService.onButtonPressed(buttonIndex)
             } else {
@@ -133,7 +125,7 @@ class ExampleActivity : Activity(), DynamicPermissionListener {
 
     private fun setupBottomButtons() {
         btn_read_battery.setOnClickListener {
-            if (isConnected) {
+            if (deviceConnector.isConnected) {
                 deviceConnector.batteryService.getPrimaryBattery(onComplete = {
                     Toast.makeText(this, "Battery level $it", Toast.LENGTH_LONG).show()
                 }, onError = {
@@ -143,7 +135,7 @@ class ExampleActivity : Activity(), DynamicPermissionListener {
         }
 
         btn_read_system_info.setOnClickListener {
-            if (isConnected) {
+            if (deviceConnector.isConnected) {
                 deviceConnector.deviceService.getSystemId(onCompleted = {
                     Toast.makeText(this, "System id $it", Toast.LENGTH_LONG).show()
                 }, onError = {
@@ -153,7 +145,7 @@ class ExampleActivity : Activity(), DynamicPermissionListener {
         }
 
         btn_send_test_file.setOnClickListener {
-            if (isConnected) {
+            if (deviceConnector.isConnected) {
                 deviceConnector.configurationService.testKit(createTestFile(), onSuccess = {
                     Toast.makeText(this, "Test kit sent!", Toast.LENGTH_LONG).show()
                 }, onError = {
@@ -163,7 +155,7 @@ class ExampleActivity : Activity(), DynamicPermissionListener {
         }
 
         btn_read_motor_value.setOnClickListener {
-            if (isConnected) {
+            if (deviceConnector.isConnected) {
                 deviceConnector.motorService.read(RoboticsMotorService.Motor.M4, onComplete = {
                     Toast.makeText(this, "Motor info: ${it.joinToString()}", Toast.LENGTH_LONG).show()
                 }, onError = {
@@ -184,9 +176,7 @@ class ExampleActivity : Activity(), DynamicPermissionListener {
 
     override fun onStop() {
         super.onStop()
-        isConnected = false
-        deviceDiscoverer.stopDiscovering()
-        deviceConnector.disconnect()
+        deviceConnector.disconnect().enqueue()
     }
 
     private fun createConfigurationFile(): Uri = File("${applicationContext.filesDir}/config.json").apply {
@@ -202,4 +192,16 @@ class ExampleActivity : Activity(), DynamicPermissionListener {
         }
         writeText(assets.open("led_test.py").readBytes().toString(Charset.forName("UTF-8")))
     }.toUri()
+
+    override fun onConnectionStateChanged(connected: Boolean) {
+        if (connected) {
+            connection_status_text.text = "Connected"
+            btn_connect.visibility = View.GONE
+            btn_disconnect.visibility = View.VISIBLE
+        } else {
+            connection_status_text.text = "Not connected"
+            btn_connect.visibility = View.VISIBLE
+            btn_disconnect.visibility = View.GONE
+        }
+    }
 }
