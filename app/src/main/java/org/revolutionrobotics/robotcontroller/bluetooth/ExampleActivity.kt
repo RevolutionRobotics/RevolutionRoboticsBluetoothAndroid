@@ -10,7 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import com.revolution.robotics.core.utils.dynamicPermissions.DynamicPermissionHandler
 import com.revolution.robotics.core.utils.dynamicPermissions.DynamicPermissionListener
-import kotlinx.android.synthetic.main.acrtivity_example.*
+import kotlinx.android.synthetic.main.activity_example.*
 import org.revolutionrobotics.bluetooth.android.communication.RoboticsDeviceConnector
 import org.revolutionrobotics.bluetooth.android.communication.RoboticsConnectionStatusListener
 import org.revolutionrobotics.bluetooth.android.service.RoboticsMotorService
@@ -30,7 +30,7 @@ class ExampleActivity : AppCompatActivity(), DynamicPermissionListener,
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.acrtivity_example)
+        setContentView(R.layout.activity_example)
         deviceConnector = RoboticsDeviceConnector(this)
         permissionRequest.listener(this)
         permissionRequest.request(this)

@@ -225,13 +225,13 @@ class RoboticsConfigurationService(
         }
     }
 
-    private fun writeLongMessage(byteArray: ByteArray, firstByte: Byte, done: () -> Unit) {
+    private fun writeLongMessage(byteArray: ByteArray, messageType: Byte, done: () -> Unit) {
         service?.getCharacteristic(CHARACTERISTIC)?.let {
             deviceConnector.writeCharacteristic(
                 it,
                 byteArray
             )
-                .split(LongMessageSplitter(firstByte, mtu - MTU_DECREASE))
+                .split(LongMessageSplitter(messageType))
                 .done { done.invoke() }
                 .enqueue()
         }
