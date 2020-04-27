@@ -48,6 +48,10 @@ class RoboticsDeviceService(
         readCharacteristic(SYSTEM_ID_CHARACTERISTIC, onCompleted, onError)
     }
 
+    fun setSystemId(systemId: String, onCompleted: (String) -> Unit, onError: (exception: BLEException) -> Unit) {
+        writeCharacteristic(SYSTEM_ID_CHARACTERISTIC,systemId.toByteArray(),  onCompleted, onError)
+    }
+
     fun getModelNumber(onCompleted: (String) -> Unit, onError: (exception: BLEException) -> Unit) {
         readCharacteristic(MODEL_NUMBER_CHARACTERISTIC, onCompleted, onError)
     }
@@ -59,6 +63,20 @@ class RoboticsDeviceService(
     ) {
         service?.let { service ->
             deviceConnector.readCharacteristic(service.getCharacteristic(uuid))
+                .with { _, data -> onCompleted(data.getStringValue(0) ?: "") }
+                .fail { _, status -> onError(BLEConnectionException(status)) }
+                .enqueue()
+        }
+    }
+
+    private fun writeCharacteristic(
+        uuid: UUID,
+        data: ByteArray,
+        onCompleted: (String) -> Unit,
+        onError: (exception: BLEException) -> Unit
+    ) {
+        service?.let { service ->
+            deviceConnector.writeCharacteristic(service.getCharacteristic(uuid), data)
                 .with { _, data -> onCompleted(data.getStringValue(0) ?: "") }
                 .fail { _, status -> onError(BLEConnectionException(status)) }
                 .enqueue()
